@@ -13,6 +13,10 @@ public partial class Item
 
     public Guid ShopId { get; set; }
 
+    public int? Quantity { get; set; }
+
+    public int? TotalHarga { get; set; }
+
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual Shop Shop { get; set; } = null!;

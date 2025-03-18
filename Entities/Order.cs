@@ -15,6 +15,10 @@ public partial class Order
 
     public Guid ItemId { get; set; }
 
+    public int? Quantity { get; set; }
+
+    public int? TotalHarga { get; set; }
+
     public virtual User Buyer { get; set; } = null!;
 
     public virtual Item Item { get; set; } = null!;

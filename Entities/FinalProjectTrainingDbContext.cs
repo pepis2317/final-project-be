@@ -51,7 +51,13 @@ public partial class FinalProjectTrainingDbContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("item_name");
+            entity.Property(e => e.Quantity)
+                .HasDefaultValue(0)
+                .HasColumnName("quantity");
             entity.Property(e => e.ShopId).HasColumnName("shop_id");
+            entity.Property(e => e.TotalHarga)
+                .HasDefaultValue(0)
+                .HasColumnName("total_harga");
 
             entity.HasOne(d => d.Shop).WithMany(p => p.Items)
                 .HasForeignKey(d => d.ShopId)
@@ -77,6 +83,12 @@ public partial class FinalProjectTrainingDbContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("Order_details");
+            entity.Property(e => e.Quantity)
+                .HasDefaultValue(0)
+                .HasColumnName("quantity");
+            entity.Property(e => e.TotalHarga)
+                .HasDefaultValue(0)
+                .HasColumnName("total_harga");
 
             entity.HasOne(d => d.Buyer).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.BuyerId)
@@ -131,6 +143,8 @@ public partial class FinalProjectTrainingDbContext : DbContext
 
             entity.HasIndex(e => e.UserPhoneNumber, "UQ__users__D5D775E81DFBDDF5").IsUnique();
 
+            entity.HasIndex(e => e.UserName, "unique_user_name").IsUnique();
+
             entity.Property(e => e.UserId)
                 .HasDefaultValueSql("(newid())")
                 .HasColumnName("user_id");
@@ -140,7 +154,6 @@ public partial class FinalProjectTrainingDbContext : DbContext
                 .IsUnicode(false)
                 .IsFixedLength()
                 .HasColumnName("gender");
-            entity.Property(e => e.ShopId).HasColumnName("shop_id");
             entity.Property(e => e.UserAddress)
                 .HasMaxLength(255)
                 .IsUnicode(false)
