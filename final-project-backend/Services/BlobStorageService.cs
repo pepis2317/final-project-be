@@ -48,7 +48,7 @@ namespace final_project_backend.Services
             }
             return false;
         }
-        public async Task<string> UploadPfpAsync(Stream imageStream, string fileName, string contentType, string containerName)
+        public async Task<string> UploadImageAsync(Stream imageStream, string fileName, string contentType, string containerName, int targetSize)
         {
             try
             {

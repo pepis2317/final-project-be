@@ -64,7 +64,7 @@ namespace final_project_backend.Services
             {
                 await _blobStorageService.DeletePfpAsync(user.UserProfile, "user-pfps");
             }
-            string imageUrl = await _blobStorageService.UploadPfpAsync(imageStream, fileName, contentType, "user-pfps");
+            string imageUrl = await _blobStorageService.UploadImageAsync(imageStream, fileName, contentType, "user-pfps", 200);
             user.UserProfile = fileName;
             _db.Users.Update(user);
             await _db.SaveChangesAsync();

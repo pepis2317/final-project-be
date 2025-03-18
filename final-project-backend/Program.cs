@@ -22,6 +22,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ItemService>();
 builder.Services.AddTransient<UserService>();
+builder.Services.AddTransient<ProductImageService>();
 builder.Services.AddTransient<ShopService>();
 builder.Services.AddSingleton<BlobStorageService>();
 builder.Services.AddCors(options =>

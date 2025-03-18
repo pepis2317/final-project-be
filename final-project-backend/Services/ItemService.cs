@@ -1,30 +1,35 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Entities;
 using final_project_backend.Models.Item;
+using final_project_backend.Services;
 
 namespace Services
 {
     public class ItemService
     {
         private readonly FinalProjectTrainingDbContext _context;
-
-        public ItemService(FinalProjectTrainingDbContext context)
+        private readonly ProductImageService _imageService;
+        public ItemService(FinalProjectTrainingDbContext context, ProductImageService imageService)
         {
             _context = context;
+            _imageService = imageService;
         }
 
         public async Task<List<ItemResponse>> GetAllItemsAsync()
         {
-            return await _context.Items
-                .Select(item => new ItemResponse
-                {
-                    ItemId = item.ItemId,
-                    ItemName = item.ItemName,
-                    ItemDesc = item.ItemDesc,
-                    Quantity = item.Quantity,
-                    TotalHarga = item.TotalHarga
-                })
-                .ToListAsync();
+            var items = await _context.Items.ToListAsync();
+
+            var tasks = items.Select(async item => new ItemResponse
+            {
+                ItemId = item.ItemId,
+                ShopId = item.ShopId,
+                ItemName = item.ItemName,
+                ItemDesc = item.ItemDesc,
+                Quantity = item.Quantity,
+                TotalHarga = item.TotalHarga,
+            });
+
+            return (await Task.WhenAll(tasks)).ToList();
         }
         public async Task<ItemResponse?> GetItemById(Guid ItemId)
         {
@@ -36,28 +41,38 @@ namespace Services
             return new ItemResponse
             {
                 ItemId = item.ItemId,
+                ShopId = item.ShopId,
                 ItemName = item.ItemName,
                 ItemDesc = item.ItemDesc,
                 Quantity = item.Quantity,
-                TotalHarga = item.TotalHarga
+                TotalHarga = item.TotalHarga,
             };
         }
         public async Task<List<ItemResponse>> GetItemsFromShop(Guid ShopId)
         {
-            var items = await _context.Items.Where(q=>q.ShopId == ShopId).Select(item => new ItemResponse
+            var items = await _context.Items.Where(q => q.ShopId == ShopId).ToListAsync();
+
+            var itemIds = items.Select(item => item.ItemId).ToList();
+
+            var result = items.Select((item, index) => new ItemResponse
             {
                 ItemId = item.ItemId,
+                ShopId = item.ShopId,
                 ItemName = item.ItemName,
                 ItemDesc = item.ItemDesc,
                 Quantity = item.Quantity,
-                TotalHarga = item.TotalHarga
-            }).ToListAsync();
-            return items;
+                TotalHarga = item.TotalHarga,
+            }).ToList();
+            return result;
         }
+
         public async Task<ItemResponse> CreateItem(Guid ShopId, CreateItemRequest request)
         {
+            Guid itemId = Guid.NewGuid();
+
             var item = new Item
             {
+                ItemId = itemId,
                 ItemName = request.ItemName,
                 ItemDesc = request.ItemDesc,
                 Quantity = request.Quantity,
@@ -66,9 +81,11 @@ namespace Services
             };
             _context.Items.Add(item);
             await _context.SaveChangesAsync();
+
             return new ItemResponse
             {
                 ItemId = item.ItemId,
+                ShopId = ShopId,
                 ItemName = item.ItemName,
                 ItemDesc = item.ItemDesc,
                 Quantity = item.Quantity,
@@ -91,6 +108,7 @@ namespace Services
             return new ItemResponse
             {
                 ItemId = item.ItemId,
+                ShopId = item.ShopId,
                 ItemName = item.ItemName,
                 ItemDesc = item.ItemDesc,
                 Quantity = item.Quantity,
