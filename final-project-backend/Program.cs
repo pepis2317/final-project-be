@@ -22,7 +22,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ItemService>();
 builder.Services.AddTransient<UserService>();
-builder.Services.AddTransient<ShopService>();   
+builder.Services.AddTransient<ShopService>();
+builder.Services.AddSingleton<BlobStorageService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
