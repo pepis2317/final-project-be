@@ -19,5 +19,7 @@ public partial class Item
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
+    public virtual ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
+
     public virtual Shop Shop { get; set; } = null!;
 }
