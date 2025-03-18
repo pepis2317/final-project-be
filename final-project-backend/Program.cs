@@ -2,6 +2,7 @@ using Entities;
 using final_project_backend.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -18,6 +19,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<BuyerService>();
 
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<ShopService>();   
