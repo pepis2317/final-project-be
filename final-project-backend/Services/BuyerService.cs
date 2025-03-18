@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Entities;
-
+using final_project_backend.Models.Users;
 namespace Services
 {
     public class BuyerService
@@ -12,20 +12,31 @@ namespace Services
             _context = context;
         }
 
-        public async Task<IEnumerable<Item>> GetAllItemsAsync()
+        public async Task<IEnumerable<SeeItems>> GetAllItemsAsync()
         {
-            return await _context.Items.ToListAsync();
+            return await _context.Items
+                .Select(item => new SeeItems
+                {
+                    ItemId = item.ItemId,
+                    ItemName = item.ItemName,
+                    ItemDesc = item.ItemDesc,
+                    Quantity = item.Quantity,
+                    TotalHarga = item.TotalHarga
+                })
+                .ToListAsync();
         }
 
-        public async Task<Order> CreateOrderAsync(Guid buyerId, Guid itemId)
+        public async Task<Order> CreateOrderAsync(CreateOrderRequest request)
         {
             var order = new Order
             {
                 OrderId = Guid.NewGuid(),
-                OrderDetails = "Pending",
-                OrderDate = DateTime.UtcNow,
-                BuyerId = buyerId,
-                ItemId = itemId
+                BuyerId = request.BuyerId,
+                ItemId = request.ItemId,
+                Quantity = request.Quantity,
+                TotalHarga = request.TotalHarga,
+                OrderDetails = request.OrderDetails,
+                OrderDate = DateTime.UtcNow
             };
 
             _context.Orders.Add(order);
@@ -33,10 +44,30 @@ namespace Services
             return order;
         }
 
-        public async Task<List<Order>> GetOrdersByBuyerIdAsync(Guid buyerId)
+        public async Task<bool> DeleteOrderAsync(Guid orderId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order == null)
+                return false;
+
+            _context.Orders.Remove(order);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+
+        public async Task<IEnumerable<OrderResponse>> GetOrdersByBuyerIdAsync(Guid buyerId)
         {
             return await _context.Orders
                 .Where(o => o.BuyerId == buyerId)
+                .Select(o => new OrderResponse
+                {
+                    OrderId = o.OrderId,
+                    OrderDetails = o.OrderDetails,
+                    OrderDate = o.OrderDate,
+                    Quantity = o.Quantity,
+                    TotalHarga = o.TotalHarga
+                })
                 .ToListAsync();
         }
     }

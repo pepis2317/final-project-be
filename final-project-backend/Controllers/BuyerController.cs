@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Entities;
 using Services;
+using final_project_backend.Models.Users;
 
 namespace Controllers
 {
@@ -16,33 +16,34 @@ namespace Controllers
         }
 
         [HttpGet("see-all-items")]
-        public async Task<ActionResult<IEnumerable<Item>>> GetAllItems()
+        public async Task<IActionResult> GetAllItems()
         {
             var items = await _buyerService.GetAllItemsAsync();
             return Ok(items);
         }
 
-        [HttpPost("create-order")]
-        public async Task<IActionResult> CreateOrder([FromQuery] Guid buyerId, [FromQuery] Guid itemId)
+        [HttpPost("create-orders")]
+        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
         {
-            try
-            {
-                var order = await _buyerService.CreateOrderAsync(buyerId, itemId);
-                return Ok(new { message = "Order created successfully!", order });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
-            }
+            var order = await _buyerService.CreateOrderAsync(request);
+            return CreatedAtAction(nameof(CreateOrder), new { id = order.OrderId }, order);
         }
 
-        [HttpGet("see-all-order/{buyerId}")]
-        public async Task<IActionResult> GetOrdersByBuyer(Guid buyerId)
+        [HttpDelete("delete-orders/{orderId}")]
+        public async Task<IActionResult> DeleteOrder(Guid orderId)
+        {
+            var result = await _buyerService.DeleteOrderAsync(orderId);
+            if (!result)
+                return NotFound(new { message = "Order not found" });
+
+            return NoContent();
+        }
+
+        [HttpGet("find-order/{buyerId}")]
+        public async Task<IActionResult> GetOrdersByBuyerId(Guid buyerId)
         {
             var orders = await _buyerService.GetOrdersByBuyerIdAsync(buyerId);
-            if (orders == null || !orders.Any()) return NotFound("No orders found for this buyer.");
             return Ok(orders);
         }
-
     }
 }
