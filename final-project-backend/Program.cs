@@ -20,6 +20,7 @@ builder.Services.AddSwaggerGen();
 
 
 builder.Services.AddTransient<UserService>();
+builder.Services.AddTransient<ShopService>();   
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>

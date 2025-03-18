@@ -7,8 +7,6 @@ public partial class User
 {
     public Guid UserId { get; set; }
 
-    public Guid? ShopId { get; set; }
-
     public string UserName { get; set; } = null!;
 
     public string UserPassword { get; set; } = null!;
