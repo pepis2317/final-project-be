@@ -16,7 +16,7 @@ namespace Controllers
         }
 
         [HttpGet("see-all-items")]
-        public async Task<ActionResult<IEnumerable<Item>>> GetAllItems()
+        public async Task<IActionResult> GetAllItems()
         {
             var items = await _buyerService.GetAllItemsAsync();
             return Ok(items);
