@@ -1,6 +1,6 @@
-﻿namespace final_project_backend.Models.Users
+﻿namespace final_project_backend.Models.Item
 {
-    public class SeeItems
+    public class ItemResponse
     {
 
         public Guid ItemId { get; set; }

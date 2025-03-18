@@ -1,4 +1,4 @@
-﻿namespace final_project_backend.Models.Users
+﻿namespace final_project_backend.Models.Order
 {
     public class OrderResponse
     {

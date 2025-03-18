@@ -13,12 +13,12 @@ namespace final_project_backend.Services
             _db = db;
             _blobStorageService = blobStorageService;
         }
-        public async Task<List<UserResponseModel>> GetAllUsers()
+        public async Task<List<UserResponse>> GetAllUsers()
         {
             var users = await _db.Users.ToListAsync();
             var pfpFilenames = users.Select(u => u.UserProfile).ToList();
             var pfpUrls = await Task.WhenAll(pfpFilenames.Select(PfpHelper));
-            var result = users.Select((user, index) => new UserResponseModel
+            var result = users.Select((user, index) => new UserResponse
             {
                 UserId = user.UserId,
                 UserName = user.UserName,

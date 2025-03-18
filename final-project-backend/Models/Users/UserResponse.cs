@@ -1,6 +1,6 @@
 ﻿namespace final_project_backend.Models.Users
 {
-    public class UserResponseModel
+    public class UserResponse
     {
         public required Guid UserId { get; set; }
         public required string UserName { get; set; }
