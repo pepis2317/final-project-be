@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Services;
-using final_project_backend.Models.Users;
+using final_project_backend.Models.Order;
 
 namespace Controllers
 {

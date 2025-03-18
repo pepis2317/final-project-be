@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Entities;
-using final_project_backend.Models.Users;
+using final_project_backend.Models.Order;
 namespace Services
 {
     public class OrderService
@@ -53,8 +53,7 @@ namespace Services
                     OrderDate = o.OrderDate,
                     Quantity = o.Quantity,
                     TotalHarga = o.TotalHarga
-                })
-                .ToListAsync();
+                }).ToListAsync();
         }
     }
 }

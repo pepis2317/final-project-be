@@ -19,6 +19,8 @@ public partial class FinalProjectTrainingDbContext : DbContext
 
     public virtual DbSet<Order> Orders { get; set; }
 
+    public virtual DbSet<ProductImage> ProductImages { get; set; }
+
     public virtual DbSet<Shop> Shops { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
@@ -97,6 +99,31 @@ public partial class FinalProjectTrainingDbContext : DbContext
             entity.HasOne(d => d.Item).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.ItemId)
                 .HasConstraintName("FK__orders__Item_id__0E6E26BF");
+        });
+
+        modelBuilder.Entity<ProductImage>(entity =>
+        {
+            entity.HasKey(e => e.ImageId).HasName("PK__productI__3CAC59117B8AA3BA");
+
+            entity.ToTable("productImages");
+
+            entity.Property(e => e.ImageId)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("Image_id");
+            entity.Property(e => e.Image)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.IsPrimary)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasDefaultValue("false")
+                .IsFixedLength()
+                .HasColumnName("Is_primary");
+            entity.Property(e => e.ItemId).HasColumnName("Item_id");
+
+            entity.HasOne(d => d.Item).WithMany(p => p.ProductImages)
+                .HasForeignKey(d => d.ItemId)
+                .HasConstraintName("FK__productIm__Item___1BC821DD");
         });
 
         modelBuilder.Entity<Shop>(entity =>

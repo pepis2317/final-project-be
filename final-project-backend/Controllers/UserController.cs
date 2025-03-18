@@ -31,5 +31,14 @@ namespace final_project_backend.Controllers
             if (result == null) return NotFound("User not found.");
             return Ok(result);
         }
+        [HttpPost("upload-pfp")]
+        public async Task<IActionResult> UploadPfp(Guid UserId, IFormFile File)
+        {
+            var fileName = $"{Guid.NewGuid()}_{File.FileName}";
+            var contentType = File.ContentType;
+            using var stream = File.OpenReadStream();
+            var imageUrl = await _service.UploadPfp(UserId, stream, fileName, contentType);
+            return Ok(new { imageUrl });
+        }
     }
 }
