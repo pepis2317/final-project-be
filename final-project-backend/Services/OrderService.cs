@@ -3,27 +3,13 @@ using Entities;
 using final_project_backend.Models.Users;
 namespace Services
 {
-    public class BuyerService
+    public class OrderService
     {
         private readonly FinalProjectTrainingDbContext _context;
 
-        public BuyerService(FinalProjectTrainingDbContext context)
+        public OrderService(FinalProjectTrainingDbContext context)
         {
             _context = context;
-        }
-
-        public async Task<IEnumerable<SeeItems>> GetAllItemsAsync()
-        {
-            return await _context.Items
-                .Select(item => new SeeItems
-                {
-                    ItemId = item.ItemId,
-                    ItemName = item.ItemName,
-                    ItemDesc = item.ItemDesc,
-                    Quantity = item.Quantity,
-                    TotalHarga = item.TotalHarga
-                })
-                .ToListAsync();
         }
 
         public async Task<Order> CreateOrderAsync(CreateOrderRequest request)

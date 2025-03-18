@@ -6,20 +6,13 @@ namespace Controllers
 {
     [Route("api/v1/buyer")]
     [ApiController]
-    public class BuyerController : ControllerBase
+    public class OrderController : ControllerBase
     {
-        private readonly BuyerService _buyerService;
+        private readonly OrderService _buyerService;
 
-        public BuyerController(BuyerService buyerService)
+        public OrderController(OrderService buyerService)
         {
             _buyerService = buyerService;
-        }
-
-        [HttpGet("see-all-items")]
-        public async Task<IActionResult> GetAllItems()
-        {
-            var items = await _buyerService.GetAllItemsAsync();
-            return Ok(items);
         }
 
         [HttpPost("create-orders")]
