@@ -19,8 +19,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<BuyerService>();
-
+builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<ItemService>();
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<ShopService>();   
 builder.Services.AddCors(options =>
