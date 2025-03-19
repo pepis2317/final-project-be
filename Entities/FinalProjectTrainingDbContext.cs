@@ -45,6 +45,9 @@ public partial class FinalProjectTrainingDbContext : DbContext
             entity.Property(e => e.ItemId)
                 .HasDefaultValueSql("(newid())")
                 .HasColumnName("item_id");
+            entity.Property(e => e.HargaPerItem)
+                .HasDefaultValue(0)
+                .HasColumnName("harga_per_item");
             entity.Property(e => e.ItemDesc)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -57,9 +60,10 @@ public partial class FinalProjectTrainingDbContext : DbContext
                 .HasDefaultValue(0)
                 .HasColumnName("quantity");
             entity.Property(e => e.ShopId).HasColumnName("shop_id");
-            entity.Property(e => e.TotalHarga)
-                .HasDefaultValue(0)
-                .HasColumnName("total_harga");
+            entity.Property(e => e.Thumbnail)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("thumbnail");
 
             entity.HasOne(d => d.Shop).WithMany(p => p.Items)
                 .HasForeignKey(d => d.ShopId)

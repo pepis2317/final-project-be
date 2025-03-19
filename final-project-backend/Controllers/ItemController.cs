@@ -15,7 +15,6 @@ namespace Controllers
         {
             _itemService = itemService;
         }
-
         [HttpGet("see-all")]
         public async Task<IActionResult> GetAllItems()
         {
