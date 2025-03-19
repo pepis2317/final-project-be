@@ -2,6 +2,7 @@
 using final_project_backend.Models.Users;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace final_project_backend.Services
 {
@@ -9,20 +10,112 @@ namespace final_project_backend.Services
     {
         private readonly FinalProjectTrainingDbContext _db;
         private readonly BlobStorageService _blobStorageService;
+        private readonly JwtService _jwtService;
         private readonly IDataProtector _protector;
-        public UserService(FinalProjectTrainingDbContext db , BlobStorageService blobStorageService, IDataProtectionProvider provider)
+        public UserService(FinalProjectTrainingDbContext db , BlobStorageService blobStorageService, IDataProtectionProvider provider, JwtService jwtService)
         {
             _db = db;
             _blobStorageService = blobStorageService;
             _protector = provider.CreateProtector("CredentialsProtector");
+            _jwtService = jwtService;
+        }
+        public async Task<UserResponse?> Get(Guid UserId)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(q => q.UserId == UserId);
+            if (user == null)
+            {
+                return null;
+            }
+            var pfp = await PfpHelper(user.UserProfile);
+            return new UserResponse
+            {
+                UserId = user.UserId,
+                UserName = user.UserName,
+                UserBalance = user.UserBalance,
+                UserProfile = pfp,
+                UserPhoneNumber = user.UserPhoneNumber,
+                UserEmail = user.UserEmail,
+                UserAddress = user.UserAddress,
+                BirthDate = user.BirthDate,
+                Gender = user.Gender
+            };
         }
         public async Task<UserResponse> Register(RegisterRequest request)
         {
             var user = new User
             {
                 UserName = request.UserName,
-                UserEmail = request.Email,
-                UserPassword = _protector.Protect(request.Password)
+                UserEmail = request.UserEmail,
+                UserPassword = _protector.Protect(request.UserPassword),
+                UserPhoneNumber = request.UserPhoneNumber,
+                UserAddress = request.UserAddress,
+                BirthDate = request.BirthDate,
+                Gender = request.Gender
+            };
+            _db.Users.Add(user);
+            var pfp = await PfpHelper(user.UserProfile);
+            await _db.SaveChangesAsync();
+            return new UserResponse
+            {
+                UserId = user.UserId,
+                UserName = user.UserName,
+                UserBalance = user.UserBalance,
+                UserProfile = pfp,
+                UserPhoneNumber = user.UserPhoneNumber,
+                UserEmail = user.UserEmail,
+                UserAddress = user.UserAddress,
+                BirthDate = user.BirthDate,
+                Gender = user.Gender
+            };
+        }
+        private string GenerateRefreshToken()
+        {
+            var randomBytes = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomBytes);
+            }
+            return Convert.ToBase64String(randomBytes);
+        }
+        public async Task<LoginResponse?> Login(string email, string password)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(q => q.UserEmail == email);
+            if(user == null)
+            {
+                return null;
+            }
+            if (_protector.Unprotect(user.UserPassword) != password)
+            {
+                return null;
+            }
+            var token = _jwtService.GenerateToken(user.UserId);
+            var refreshToken = GenerateRefreshToken();
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(1);
+            _db.Users.Update(user);
+            await _db.SaveChangesAsync();
+            return new LoginResponse
+            {
+                Token = token,
+                RefreshToken = refreshToken
+            };
+        }
+        public async Task<LoginResponse?> RefreshToken(string refreshToken)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(q => q.RefreshToken == refreshToken);
+            if (user == null || user.RefreshTokenExpiryTime < DateTime.UtcNow)
+            {
+                return null;
+            }
+            var newToken = _jwtService.GenerateToken(user.UserId);
+            user.RefreshToken = GenerateRefreshToken();
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(1);
+            _db.Users.Update(user);
+            await _db.SaveChangesAsync();
+            return new LoginResponse
+            {
+                Token = newToken,
+                RefreshToken = user.RefreshToken
             };
         }
         public async Task<List<UserResponse>> GetAllUsers()
@@ -45,15 +138,14 @@ namespace final_project_backend.Services
             return result;
         }
 
-        public async Task<User?> UpdateUserById(Guid userId, User updatedUser)
+        public async Task<User?> UpdateUserById(Guid userId, UserUpdateRequest updatedUser)
         {
             var existingUser = await _db.Users.FindAsync(userId);
             if (existingUser == null) return null;
 
             existingUser.UserName = string.IsNullOrWhiteSpace(updatedUser.UserName) ? existingUser.UserName : updatedUser.UserName;
-            existingUser.UserPassword = string.IsNullOrWhiteSpace(updatedUser.UserPassword) ? existingUser.UserPassword : updatedUser.UserPassword;
+            existingUser.UserPassword = string.IsNullOrWhiteSpace(updatedUser.UserPassword) ? existingUser.UserPassword : _protector.Protect(updatedUser.UserPassword);
             existingUser.UserBalance = updatedUser.UserBalance ?? existingUser.UserBalance;
-            existingUser.UserProfile = string.IsNullOrWhiteSpace(updatedUser.UserProfile) ? existingUser.UserProfile : updatedUser.UserProfile;
             existingUser.UserPhoneNumber = string.IsNullOrWhiteSpace(updatedUser.UserPhoneNumber) ? existingUser.UserPhoneNumber : updatedUser.UserPhoneNumber;
             existingUser.UserEmail = string.IsNullOrWhiteSpace(updatedUser.UserEmail) ? existingUser.UserEmail : updatedUser.UserEmail;
             existingUser.UserAddress = string.IsNullOrWhiteSpace(updatedUser.UserAddress) ? existingUser.UserAddress : updatedUser.UserAddress;

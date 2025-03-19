@@ -25,6 +25,10 @@ public partial class User
 
     public string? Gender { get; set; }
 
+    public string? RefreshToken { get; set; }
+
+    public DateTime? RefreshTokenExpiryTime { get; set; }
+
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual ICollection<Shop> Shops { get; set; } = new List<Shop>();
