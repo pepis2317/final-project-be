@@ -1,5 +1,6 @@
 ﻿using Entities;
 using final_project_backend.Models.Users;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 
 namespace final_project_backend.Services
@@ -8,10 +9,21 @@ namespace final_project_backend.Services
     {
         private readonly FinalProjectTrainingDbContext _db;
         private readonly BlobStorageService _blobStorageService;
-        public UserService(FinalProjectTrainingDbContext db , BlobStorageService blobStorageService)
+        private readonly IDataProtector _protector;
+        public UserService(FinalProjectTrainingDbContext db , BlobStorageService blobStorageService, IDataProtectionProvider provider)
         {
             _db = db;
             _blobStorageService = blobStorageService;
+            _protector = provider.CreateProtector("CredentialsProtector");
+        }
+        public async Task<UserResponse> Register(RegisterRequest request)
+        {
+            var user = new User
+            {
+                UserName = request.UserName,
+                UserEmail = request.Email,
+                UserPassword = _protector.Protect(request.Password)
+            };
         }
         public async Task<List<UserResponse>> GetAllUsers()
         {
