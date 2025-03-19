@@ -26,8 +26,8 @@ namespace final_project_backend.Controllers
             var fileName = $"{Guid.NewGuid()}_{File.FileName}";
             var contentType = File.ContentType;
             using var stream = File.OpenReadStream();
-            var imageUrl = await _service.UploadItemImage(ItemId, stream, fileName, contentType);
-            return Ok(new { imageUrl });
+            var blobUrl = await _service.UploadItemImage(ItemId, stream, fileName, contentType);
+            return Ok(new { blobUrl });
         }
     }
 }
