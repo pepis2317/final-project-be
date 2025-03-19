@@ -121,7 +121,7 @@ namespace Services
             item.ItemName = string.IsNullOrEmpty(request.ItemName)? item.ItemName: request.ItemName;
             item.ItemDesc = string.IsNullOrEmpty(request.ItemDesc)? item.ItemDesc: request.ItemDesc;
             item.Quantity = request.Quantity == null? item.Quantity: request.Quantity;
-            item.HargaPerItem = request.TotalHarga == null? item.HargaPerItem: request.TotalHarga;
+            item.HargaPerItem = request.HargaPerItem == null? item.HargaPerItem: request.HargaPerItem;
             _context.Items.Update(item);
             await _context.SaveChangesAsync();
             return new ItemResponse
