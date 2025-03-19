@@ -15,7 +15,9 @@ public partial class Item
 
     public int? Quantity { get; set; }
 
-    public int? TotalHarga { get; set; }
+    public int? HargaPerItem { get; set; }
+
+    public string? Thumbnail { get; set; }
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 

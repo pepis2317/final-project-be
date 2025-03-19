@@ -8,28 +8,47 @@ namespace Services
     public class ItemService
     {
         private readonly FinalProjectTrainingDbContext _context;
-        private readonly ProductImageService _imageService;
-        public ItemService(FinalProjectTrainingDbContext context, ProductImageService imageService)
+        private readonly BlobStorageService _blobStorageService;
+        public ItemService(FinalProjectTrainingDbContext context, BlobStorageService blobStorageService)
         {
             _context = context;
-            _imageService = imageService;
+            _blobStorageService = blobStorageService;
         }
-
+        private async Task<string?> ImageHelper(string? fileName)
+        {
+            string? imageUrl = await _blobStorageService.GetTemporaryImageUrl(fileName, "item-images");
+            return imageUrl;
+        }
+        public async Task<string?> GetThumbnail(Guid ItemId)
+        {
+            var image = await _context.ProductImages.FirstOrDefaultAsync(q => q.ItemId == ItemId && q.IsPrimary == "true");
+            if (image == null)
+            {
+                return null;
+            }
+            var thumbnail = await ImageHelper(image.Image);
+            return thumbnail;
+        }
         public async Task<List<ItemResponse>> GetAllItemsAsync()
         {
             var items = await _context.Items.ToListAsync();
-
-            var tasks = items.Select(async item => new ItemResponse
+            var result = new List<ItemResponse>();
+            foreach (var item in items)
             {
-                ItemId = item.ItemId,
-                ShopId = item.ShopId,
-                ItemName = item.ItemName,
-                ItemDesc = item.ItemDesc,
-                Quantity = item.Quantity,
-                TotalHarga = item.TotalHarga,
-            });
+                var thumbnailUrl = await GetThumbnail(item.ItemId);
+                result.Add(new ItemResponse
+                {
+                    ItemId = item.ItemId,
+                    ShopId = item.ShopId,
+                    ItemName = item.ItemName,
+                    ItemDesc = item.ItemDesc,
+                    Quantity = item.Quantity,
+                    HargaPerItem = item.HargaPerItem,
+                    Thumbnail = thumbnailUrl
+                });
 
-            return (await Task.WhenAll(tasks)).ToList();
+            }
+            return result;
         }
         public async Task<ItemResponse?> GetItemById(Guid ItemId)
         {
@@ -45,7 +64,7 @@ namespace Services
                 ItemName = item.ItemName,
                 ItemDesc = item.ItemDesc,
                 Quantity = item.Quantity,
-                TotalHarga = item.TotalHarga,
+                HargaPerItem = item.HargaPerItem
             };
         }
         public async Task<List<ItemResponse>> GetItemsFromShop(Guid ShopId)
@@ -61,7 +80,7 @@ namespace Services
                 ItemName = item.ItemName,
                 ItemDesc = item.ItemDesc,
                 Quantity = item.Quantity,
-                TotalHarga = item.TotalHarga,
+                HargaPerItem = item.HargaPerItem,
             }).ToList();
             return result;
         }
@@ -77,7 +96,7 @@ namespace Services
                 ItemDesc = request.ItemDesc,
                 Quantity = request.Quantity,
                 ShopId = ShopId,
-                TotalHarga = request.TotalHarga
+                HargaPerItem = request.HargaPerItem
             };
             _context.Items.Add(item);
             await _context.SaveChangesAsync();
@@ -89,7 +108,7 @@ namespace Services
                 ItemName = item.ItemName,
                 ItemDesc = item.ItemDesc,
                 Quantity = item.Quantity,
-                TotalHarga = item.TotalHarga
+                HargaPerItem = item.HargaPerItem
             };
         }
         public async Task<ItemResponse?>EditItem(Guid ItemId, EditItemRequest request)
@@ -102,7 +121,7 @@ namespace Services
             item.ItemName = string.IsNullOrEmpty(request.ItemName)? item.ItemName: request.ItemName;
             item.ItemDesc = string.IsNullOrEmpty(request.ItemDesc)? item.ItemDesc: request.ItemDesc;
             item.Quantity = request.Quantity == null? item.Quantity: request.Quantity;
-            item.TotalHarga = request.TotalHarga == null? item.TotalHarga: request.TotalHarga;
+            item.HargaPerItem = request.TotalHarga == null? item.HargaPerItem: request.TotalHarga;
             _context.Items.Update(item);
             await _context.SaveChangesAsync();
             return new ItemResponse
@@ -112,7 +131,7 @@ namespace Services
                 ItemName = item.ItemName,
                 ItemDesc = item.ItemDesc,
                 Quantity = item.Quantity,
-                TotalHarga = item.TotalHarga
+                HargaPerItem = item.HargaPerItem
             };
         }
         public async Task<string?> DeleteItem(Guid ItemId)
