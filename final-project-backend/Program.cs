@@ -36,6 +36,12 @@ builder.Services.AddCors(options =>
 });
 var app = builder.Build();
 app.UseCors("AllowAll");
+app.UseCors(policy =>
+    policy.WithOrigins("http://localhost:3000") // Sesuaikan dengan port Next.js
+          .AllowAnyMethod()
+          .AllowAnyHeader()
+);
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
