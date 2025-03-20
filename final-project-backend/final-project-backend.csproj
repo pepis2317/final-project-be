@@ -20,9 +20,4 @@
     <ProjectReference Include="..\Entities\Entities.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Handlers\" />
-    <Folder Include="Validators\" />
-  </ItemGroup>
-
 </Project>

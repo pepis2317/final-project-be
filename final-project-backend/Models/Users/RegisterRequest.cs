@@ -1,6 +1,9 @@
-﻿namespace final_project_backend.Models.Users
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+
+namespace final_project_backend.Models.Users
 {
-    public class RegisterRequest
+    public class RegisterRequest: IRequest<(ProblemDetails?, UserResponse?)>
     {
         public required string UserName { get; set; }
         public required string UserPassword { get; set; }

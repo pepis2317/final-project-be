@@ -1,10 +1,20 @@
 using Entities;
+using final_project_backend.Models.Item;
+using final_project_backend.Models.Order;
+using final_project_backend.Models.Shop;
+using final_project_backend.Models.Users;
 using final_project_backend.Services;
+using final_project_backend.Validators.Item;
+using final_project_backend.Validators.Order;
+using final_project_backend.Validators.Shop;
+using final_project_backend.Validators.User;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Services;
+using System.Reflection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,6 +51,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDataProtection();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IValidator<LoginRequest>, LoginValidator>();
+builder.Services.AddScoped<IValidator<UserUpdateRequest>, UserUpdateValidator>();
+builder.Services.AddScoped<IValidator<CreateShopRequest>, CreateShopValidator>();
+builder.Services.AddScoped<IValidator<EditOrderRequest>, EditShopValidator>();
+builder.Services.AddScoped<IValidator<CreateItemRequest>, CreateItemValidator>();
+builder.Services.AddScoped<IValidator<EditItemRequest>, EditItemValidator>();
+builder.Services.AddScoped<IValidator<RegisterRequest>, RegisterValidator>();
+builder.Services.AddScoped<IValidator<CreateOrderRequest>, CreateOrderValidator>();
+builder.Services.AddScoped<IValidator<UpdateOrderRequest>, UpdateOrderValidator>();
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
+
+
 
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ItemService>();
@@ -49,6 +72,7 @@ builder.Services.AddTransient<ProductImageService>();
 builder.Services.AddTransient<ShopService>();
 builder.Services.AddSingleton<BlobStorageService>();
 builder.Services.AddSingleton<JwtService>();
+builder.Services.AddHostedService<OrderDetailUpdaterService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>

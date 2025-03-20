@@ -1,7 +1,13 @@
-﻿namespace final_project_backend.Models.Users
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
+
+namespace final_project_backend.Models.Users
 {
-    public class UserUpdateRequest
+    public class UserUpdateRequest : IRequest<(ProblemDetails?, UserResponse?)>
     {
+        [SwaggerIgnore]
+        public Guid UserId { get; set; }
         public string? UserName { get; set; }
         public  string? UserPassword { get; set; }
         public  string? UserPhoneNumber { get; set; }
