@@ -20,6 +20,36 @@ namespace Services
             string? imageUrl = await _blobStorageService.GetTemporaryImageUrl(fileName, "item-images");
             return imageUrl;
         }
+        public async Task<List<ItemResponse>?> GetItemsFromQuery(Guid? ShopId, string searchTerm)
+        {
+            var query = _context.Items.Include(q => q.Shop).AsQueryable().Where(q => 
+            q.ItemName.ToLower().Contains(searchTerm) ||
+            q.ItemDesc.ToLower().Contains(searchTerm)||
+            q.Shop.ShopName.ToLower().Contains(searchTerm)
+            );
+            if (ShopId != null)
+            {
+                query = query.Where(q=>q.ShopId == ShopId);
+            }
+            var items = await query.ToListAsync();
+            var result = new List<ItemResponse>();
+            foreach (var item in items)
+            {
+                var thumbnailUrl = await GetThumbnail(item.ItemId);
+                result.Add(new ItemResponse
+                {
+                    ItemId = item.ItemId,
+                    ShopId = item.ShopId,
+                    ItemName = item.ItemName,
+                    ItemDesc = item.ItemDesc,
+                    Quantity = item.Quantity,
+                    HargaPerItem = item.HargaPerItem,
+                    Thumbnail = thumbnailUrl
+                });
+
+            }
+            return result;
+        }
         public async Task<string?> GetThumbnail(Guid ItemId)
         {
             var image = await _context.ProductImages.FirstOrDefaultAsync(q => q.ItemId == ItemId && q.IsPrimary == "true");

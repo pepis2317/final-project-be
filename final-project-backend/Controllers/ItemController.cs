@@ -52,6 +52,26 @@ namespace Controllers
             return Ok(item);
         }
 
+        [HttpGet("get-query")]
+        public async Task<IActionResult> GetFromQuery([FromQuery] string searchTerm)
+        {
+            var items = await _itemService.GetItemsFromQuery(null, searchTerm);
+            if (items == null)
+            {
+                return BadRequest(Invalid("Nothing found using query"));
+            }
+            return Ok(items);
+        }
+        [HttpGet("get-query/{ShopId}")]
+        public async Task<IActionResult> GetFromShop(Guid ShopId, [FromQuery] string searchTerm)
+        {
+            var items = await _itemService.GetItemsFromQuery(ShopId, searchTerm);
+            if (items == null)
+            {
+                return BadRequest(Invalid("Nothing found using query in this shop"));
+            }
+            return Ok(items);
+        }
         [HttpGet("get-shop-items")]
         public async Task<IActionResult> GetItemsFromShop(Guid ShopId)
         {
