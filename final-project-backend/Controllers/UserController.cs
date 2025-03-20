@@ -1,6 +1,9 @@
 ﻿using Entities;
+using final_project_backend.Models.Users;
 using final_project_backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -25,7 +28,7 @@ namespace final_project_backend.Controllers
         }
 
         [HttpPut("update-user/{userId}")]
-        public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] User updatedUser)
+        public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UserUpdateRequest updatedUser)
         {
             var result = await _service.UpdateUserById(userId, updatedUser);
             if (result == null) return NotFound("User not found.");
@@ -39,6 +42,30 @@ namespace final_project_backend.Controllers
             using var stream = File.OpenReadStream();
             var blobUrl= await _service.UploadPfp(UserId, stream, fileName, contentType);
             return Ok(new { blobUrl });
+        }
+        [HttpPost("register-user")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            var data = await _service.Register(request);
+            return Ok(data);
+        }
+        [Authorize]
+        [HttpGet("user-data")]
+        public async Task<IActionResult> GetUserData()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("UserId")?.Value;
+            var user = await _service.Get(Guid.Parse(userId));
+            return Ok(user);
+        }
+        [HttpPost("user-login")]
+        public async Task<IActionResult> Login([FromQuery] LoginRequest request)
+        {
+            var data = await _service.Login(request.Email, request.Password);
+            if (data == null)
+            {
+                return NotFound("User not found.");
+            }
+            return Ok(data);
         }
     }
 }

@@ -185,6 +185,13 @@ public partial class FinalProjectTrainingDbContext : DbContext
                 .IsUnicode(false)
                 .IsFixedLength()
                 .HasColumnName("gender");
+            entity.Property(e => e.RefreshToken)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("refresh_token");
+            entity.Property(e => e.RefreshTokenExpiryTime)
+                .HasColumnType("datetime")
+                .HasColumnName("refresh_token_expiry_time");
             entity.Property(e => e.UserAddress)
                 .HasMaxLength(255)
                 .IsUnicode(false)
