@@ -50,7 +50,13 @@ namespace Controllers
         public async Task<IActionResult> DeleteItem(Guid ItemId)
         {
             var data = await _itemService.DeleteItem(ItemId);
-            return Ok(data);
+            if (data == null)
+            {
+                return NotFound(new { message = "Item tidak ditemukan" });
+            }
+
+            return Ok(new { message = $"Item '{data}' berhasil dihapus" }); 
         }
+
     }
 }

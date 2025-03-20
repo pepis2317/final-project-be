@@ -137,11 +137,14 @@ namespace Services
         public async Task<string?> DeleteItem(Guid ItemId)
         {
             var item = await _context.Items.FirstOrDefaultAsync(q => q.ItemId == ItemId);
-            if( item == null)
+            if (item == null)
             {
-                return null;    
+                return null;
             }
+
             _context.Items.Remove(item);
+            await _context.SaveChangesAsync(); 
+
             return item.ItemName;
         }
     }
