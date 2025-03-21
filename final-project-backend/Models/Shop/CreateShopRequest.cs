@@ -1,6 +1,10 @@
-﻿namespace final_project_backend.Models.Shop
+﻿using final_project_backend.Models.Users;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+
+namespace final_project_backend.Models.Shop
 {
-    public class CreateShopRequest
+    public class CreateShopRequest : IRequest<(ProblemDetails?, ShopModel?)>
     {
 
         public required string ShopName {  get; set; }

@@ -2,6 +2,7 @@
 using Entities;
 using final_project_backend.Models.Item;
 using final_project_backend.Services;
+using System.Net;
 
 namespace Services
 {
@@ -18,6 +19,36 @@ namespace Services
         {
             string? imageUrl = await _blobStorageService.GetTemporaryImageUrl(fileName, "item-images");
             return imageUrl;
+        }
+        public async Task<List<ItemResponse>?> GetItemsFromQuery(Guid? ShopId, string searchTerm)
+        {
+            var query = _context.Items.Include(q => q.Shop).AsQueryable().Where(q => 
+            q.ItemName.ToLower().Contains(searchTerm) ||
+            q.ItemDesc.ToLower().Contains(searchTerm)||
+            q.Shop.ShopName.ToLower().Contains(searchTerm)
+            );
+            if (ShopId != null)
+            {
+                query = query.Where(q=>q.ShopId == ShopId);
+            }
+            var items = await query.ToListAsync();
+            var result = new List<ItemResponse>();
+            foreach (var item in items)
+            {
+                var thumbnailUrl = await GetThumbnail(item.ItemId);
+                result.Add(new ItemResponse
+                {
+                    ItemId = item.ItemId,
+                    ShopId = item.ShopId,
+                    ItemName = item.ItemName,
+                    ItemDesc = item.ItemDesc,
+                    Quantity = item.Quantity,
+                    HargaPerItem = item.HargaPerItem,
+                    Thumbnail = thumbnailUrl
+                });
+
+            }
+            return result;
         }
         public async Task<string?> GetThumbnail(Guid ItemId)
         {
@@ -57,6 +88,7 @@ namespace Services
             {
                 return null;
             }
+            var thumbnailUrl = await GetThumbnail(item.ItemId);
             return new ItemResponse
             {
                 ItemId = item.ItemId,
@@ -64,28 +96,34 @@ namespace Services
                 ItemName = item.ItemName,
                 ItemDesc = item.ItemDesc,
                 Quantity = item.Quantity,
-                HargaPerItem = item.HargaPerItem
+                HargaPerItem = item.HargaPerItem,
+                Thumbnail = thumbnailUrl
             };
         }
         public async Task<List<ItemResponse>> GetItemsFromShop(Guid ShopId)
         {
             var items = await _context.Items.Where(q => q.ShopId == ShopId).ToListAsync();
-
-            var itemIds = items.Select(item => item.ItemId).ToList();
-
-            var result = items.Select((item, index) => new ItemResponse
+            var result = new List<ItemResponse>();
+            foreach(var item in items)
             {
-                ItemId = item.ItemId,
-                ShopId = item.ShopId,
-                ItemName = item.ItemName,
-                ItemDesc = item.ItemDesc,
-                Quantity = item.Quantity,
-                HargaPerItem = item.HargaPerItem,
-            }).ToList();
+                var thumbnailUrl = await GetThumbnail(item.ItemId);
+                result.Add(new ItemResponse
+                {
+                    ItemId = item.ItemId,
+                    ShopId = item.ShopId,
+                    ItemName = item.ItemName,
+                    ItemDesc = item.ItemDesc,
+                    Quantity = item.Quantity,
+                    HargaPerItem = item.HargaPerItem,
+                    Thumbnail = item.Thumbnail
+                });
+            }
             return result;
+
+
         }
 
-        public async Task<ItemResponse> CreateItem(Guid ShopId, CreateItemRequest request)
+        public async Task<ItemResponse> CreateItem(CreateItemRequest request)
         {
             Guid itemId = Guid.NewGuid();
 
@@ -95,7 +133,7 @@ namespace Services
                 ItemName = request.ItemName,
                 ItemDesc = request.ItemDesc,
                 Quantity = request.Quantity,
-                ShopId = ShopId,
+                ShopId = request.ShopId,
                 HargaPerItem = request.HargaPerItem
             };
             _context.Items.Add(item);
@@ -104,16 +142,16 @@ namespace Services
             return new ItemResponse
             {
                 ItemId = item.ItemId,
-                ShopId = ShopId,
+                ShopId = item.ShopId,
                 ItemName = item.ItemName,
                 ItemDesc = item.ItemDesc,
                 Quantity = item.Quantity,
                 HargaPerItem = item.HargaPerItem
             };
         }
-        public async Task<ItemResponse?>EditItem(Guid ItemId, EditItemRequest request)
+        public async Task<ItemResponse?>EditItem(EditItemRequest request)
         {
-            var item = await _context.Items.FirstOrDefaultAsync(q=>q.ItemId ==  ItemId);
+            var item = await _context.Items.FirstOrDefaultAsync(q=>q.ItemId ==  request.ItemId);
             if(item == null)
             {
                 return null;
@@ -121,7 +159,7 @@ namespace Services
             item.ItemName = string.IsNullOrEmpty(request.ItemName)? item.ItemName: request.ItemName;
             item.ItemDesc = string.IsNullOrEmpty(request.ItemDesc)? item.ItemDesc: request.ItemDesc;
             item.Quantity = request.Quantity == null? item.Quantity: request.Quantity;
-            item.HargaPerItem = request.TotalHarga == null? item.HargaPerItem: request.TotalHarga;
+            item.HargaPerItem = request.HargaPerItem == null? item.HargaPerItem: request.HargaPerItem;
             _context.Items.Update(item);
             await _context.SaveChangesAsync();
             return new ItemResponse
@@ -131,7 +169,8 @@ namespace Services
                 ItemName = item.ItemName,
                 ItemDesc = item.ItemDesc,
                 Quantity = item.Quantity,
-                HargaPerItem = item.HargaPerItem
+                HargaPerItem = item.HargaPerItem,
+                Thumbnail = item.Thumbnail
             };
         }
         public async Task<string?> DeleteItem(Guid ItemId)
@@ -142,6 +181,7 @@ namespace Services
                 return null;    
             }
             _context.Items.Remove(item);
+            await _context.SaveChangesAsync();
             return item.ItemName;
         }
     }

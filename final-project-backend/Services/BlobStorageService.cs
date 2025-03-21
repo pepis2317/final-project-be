@@ -16,26 +16,39 @@ namespace final_project_backend.Services
         }
         public async Task<string?> GetTemporaryImageUrl(string? fileName, string containerName)
         {
-            if (fileName == null)
+            if (string.IsNullOrEmpty(fileName))
             {
                 return null;
             }
+
             var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
             var blobClient = containerClient.GetBlobClient(fileName);
+
             if (!(await blobClient.ExistsAsync()))
             {
                 return null;
             }
+
             var sasBuilder = new BlobSasBuilder
             {
                 BlobContainerName = containerName,
                 BlobName = fileName,
                 Resource = "b",
-                StartsOn = DateTimeOffset.UtcNow,
-                ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(5),
+                StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5), // Start slightly earlier to avoid timing issues
+                ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(10),
             };
+
             sasBuilder.SetPermissions(BlobSasPermissions.Read);
-            return blobClient.GenerateSasUri(sasBuilder).ToString();
+
+            if (blobClient.CanGenerateSasUri)
+            {
+                var sasUrl = blobClient.GenerateSasUri(sasBuilder).ToString();
+                return sasUrl;
+            }
+            else
+            {
+                return null;
+            }
         }
         public async Task<bool> DeletePfpAsync(string fileName, string containerName)
         {

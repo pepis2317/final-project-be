@@ -138,10 +138,13 @@ namespace final_project_backend.Services
             return result;
         }
 
-        public async Task<User?> UpdateUserById(Guid userId, UserUpdateRequest updatedUser)
+        public async Task<UserResponse?> UpdateUserById(UserUpdateRequest updatedUser)
         {
-            var existingUser = await _db.Users.FindAsync(userId);
-            if (existingUser == null) return null;
+            var existingUser = await _db.Users.FindAsync(updatedUser.UserId);
+            if (existingUser == null)
+            {
+                return null;
+            }
 
             existingUser.UserName = string.IsNullOrWhiteSpace(updatedUser.UserName) ? existingUser.UserName : updatedUser.UserName;
             existingUser.UserPassword = string.IsNullOrWhiteSpace(updatedUser.UserPassword) ? existingUser.UserPassword : _protector.Protect(updatedUser.UserPassword);
@@ -154,7 +157,19 @@ namespace final_project_backend.Services
 
             _db.Users.Update(existingUser);
             await _db.SaveChangesAsync();
-            return existingUser;
+            var pfp = await PfpHelper(existingUser.UserProfile);
+            return new UserResponse
+            {
+                UserId = existingUser.UserId,
+                UserName = existingUser.UserName,
+                UserBalance = existingUser.UserBalance,
+                UserProfile = pfp,
+                UserPhoneNumber = existingUser.UserPhoneNumber,
+                UserEmail = existingUser.UserEmail,
+                UserAddress = existingUser.UserAddress,
+                BirthDate = existingUser.BirthDate,
+                Gender = existingUser.Gender
+            };
         }
 
         public async Task<string?> UploadPfp(Guid UserId, Stream imageStream, string fileName, string contentType)
