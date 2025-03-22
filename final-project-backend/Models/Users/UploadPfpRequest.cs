@@ -2,5 +2,7 @@
 {
     public class UploadPfpRequest
     {
+        public required Guid UserId { get; set; }
+        public required IFormFile file { get; set; }
     }
 }

@@ -69,9 +69,9 @@ namespace final_project_backend.Services
                 CreatedAt = shop.CreatedAt
             };
         }
-        public async Task<ShopModel?> EditShop(Guid ShopId, EditShopRequest request)
+        public async Task<ShopModel?> EditShop(EditOrderRequest request)
         {
-            var shop = await _db.Shops.FirstOrDefaultAsync(q=>q.ShopId == ShopId);
+            var shop = await _db.Shops.FirstOrDefaultAsync(q=>q.ShopId == request.ShopId);
             if(shop != null)
             {
                 shop.ShopName = string.IsNullOrEmpty(request.ShopName)?shop.ShopName : request.ShopName;
