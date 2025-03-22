@@ -61,12 +61,12 @@ namespace final_project_backend.Controllers
             return Ok(result.Item2);
         }
         [HttpPost("upload-pfp")]
-        public async Task<IActionResult> UploadPfp(Guid UserId, IFormFile File)
+        public async Task<IActionResult> UploadPfp(UploadPfpRequest request)
         {
-            var fileName = $"{Guid.NewGuid()}_{File.FileName}";
-            var contentType = File.ContentType;
-            using var stream = File.OpenReadStream();
-            var blobUrl= await _service.UploadPfp(UserId, stream, fileName, contentType);
+            var fileName = $"{Guid.NewGuid()}_{request.file.FileName}";
+            var contentType = request.file.ContentType;
+            using var stream = request.file.OpenReadStream();
+            var blobUrl= await _service.UploadPfp(request.UserId, stream, fileName, contentType);
             if (blobUrl == null)
             {
                 return BadRequest(Invalid("Issue with getting blobUrl"));

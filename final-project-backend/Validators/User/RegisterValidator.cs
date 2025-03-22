@@ -25,7 +25,7 @@ namespace final_project_backend.Validators.User
         private async Task<bool> CheckNewEmail(string email, CancellationToken token)
         {
             var user = await _db.Users.Where(q => q.UserEmail == email).FirstOrDefaultAsync(token);
-            if (user != null && user.UserEmail != email)
+            if (user != null)
             {
                 return false;
             }
