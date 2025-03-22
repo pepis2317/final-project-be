@@ -212,7 +212,7 @@ public partial class FinalProjectTrainingDbContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("user_password");
             entity.Property(e => e.UserPhoneNumber)
-                .HasMaxLength(12)
+                .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("user_phone_number");
             entity.Property(e => e.UserProfile)
