@@ -1,16 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Entities;
 using final_project_backend.Models.Order;
+using Azure.Core;
 namespace Services
 {
     public class OrderService
     {
         private readonly FinalProjectTrainingDbContext _context;
+        private readonly ItemService _itemService;
 
-
-        public OrderService(FinalProjectTrainingDbContext context)
+        public OrderService(FinalProjectTrainingDbContext context, ItemService itemService)
         {
             _context = context;
+            _itemService = itemService;
         }
 
 
@@ -24,7 +26,8 @@ namespace Services
                 Quantity = request.Quantity,
                 TotalHarga = request.TotalHarga,
                 OrderDetails = "Pending",
-                OrderDate = DateTime.UtcNow
+                OrderDate = DateTime.UtcNow,
+                Confirmed = "unconfirmed"
             };
 
             _context.Orders.Add(order);
@@ -35,7 +38,8 @@ namespace Services
                 Quantity = request.Quantity,
                 TotalHarga = request.TotalHarga,
                 OrderDetails = "Pending",
-                OrderDate = DateTime.UtcNow
+                OrderDate = DateTime.UtcNow,
+                Confirmed = "unconfirmed"
             };
         }
         public async Task <OrderResponse?> UpdateOrderAsync(UpdateOrderRequest request)
@@ -56,7 +60,8 @@ namespace Services
                 Quantity = data.Quantity,
                 TotalHarga = data.TotalHarga,
                 OrderDetails = data.OrderDetails,
-                OrderDate = data.OrderDate
+                OrderDate = data.OrderDate,
+                Confirmed = data.Confirmed
             };
         }
         public async Task<bool> DeleteOrderAsync(Guid orderId)
@@ -95,16 +100,63 @@ namespace Services
 
         public async Task<IEnumerable<OrderResponse>> GetOrdersByBuyerIdAsync(Guid buyerId)
         {
-            return await _context.Orders
-                .Where(o => o.BuyerId == buyerId)
-                .Select(o => new OrderResponse
+            var orders = await _context.Orders.Where(o => o.BuyerId == buyerId).OrderByDescending(q => q.OrderDate).ToListAsync();
+            var result = new List<OrderResponse>();
+            foreach(var order in orders)
+            {
+                var item = await _itemService.GetItemById(order.ItemId);
+                result.Add(new OrderResponse
                 {
-                    OrderId = o.OrderId,
-                    OrderDetails = o.OrderDetails,
-                    OrderDate = o.OrderDate,
-                    Quantity = o.Quantity,
-                    TotalHarga = o.TotalHarga
-                }).ToListAsync();
+                    OrderId = order.OrderId,
+                    OrderDetails = order.OrderDetails,
+                    OrderDate = order.OrderDate,
+                    Quantity = order.Quantity,
+                    TotalHarga = order.TotalHarga,
+                    Confirmed = order.Confirmed,
+                    Item = item
+                });
+            }
+            return result;
+        }
+        public async Task<IEnumerable<OrderResponse>> GetUnconfirmedOrdersByBuyerIdAsync (Guid buyerId)
+        {
+            var orders = await _context.Orders.Where(o => o.BuyerId == buyerId && o.Confirmed == "unconfirmed").OrderByDescending(q=>q.OrderDate).ToListAsync();
+            var result = new List<OrderResponse>();
+            foreach (var order in orders)
+            {
+                var item = await _itemService.GetItemById(order.ItemId);
+                result.Add(new OrderResponse
+                {
+                    OrderId = order.OrderId,
+                    OrderDetails = order.OrderDetails,
+                    OrderDate = order.OrderDate,
+                    Quantity = order.Quantity,
+                    TotalHarga = order.TotalHarga,
+                    Confirmed = order.Confirmed,
+                    Item = item
+                });
+            }
+            return result;
+        }
+        public async Task<OrderResponse?>ConfirmOrder(Guid OrderId)
+        {
+            var data = await _context.Orders.FirstOrDefaultAsync(q=>q.OrderId == OrderId);
+            if(data == null)
+            {
+                return null;
+            }
+            data.Confirmed = "confirmed";
+            _context.Orders.Update(data);
+            await _context.SaveChangesAsync();
+            return new OrderResponse
+            {
+                OrderId = data.OrderId,
+                Quantity = data.Quantity,
+                TotalHarga = data.TotalHarga,
+                OrderDetails = data.OrderDetails,
+                OrderDate = data.OrderDate,
+                Confirmed= data.Confirmed
+            };
         }
     }
 }

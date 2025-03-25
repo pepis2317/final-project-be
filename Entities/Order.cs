@@ -19,6 +19,8 @@ public partial class Order
 
     public int? TotalHarga { get; set; }
 
+    public string? Confirmed { get; set; }
+
     public virtual User Buyer { get; set; } = null!;
 
     public virtual Item Item { get; set; } = null!;

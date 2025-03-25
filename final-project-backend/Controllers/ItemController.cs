@@ -31,6 +31,7 @@ namespace Controllers
             };
             return problemDetails;
         }
+        
         [HttpGet("see-all")]
         public async Task<IActionResult> GetAllItems()
         {
@@ -53,24 +54,14 @@ namespace Controllers
         }
 
         [HttpGet("get-query")]
-        public async Task<IActionResult> GetFromQuery([FromQuery] string searchTerm)
+        public async Task<IActionResult> GetFromQuery([FromQuery] ItemQuery request)
         {
-            var items = await _itemService.GetItemsFromQuery(null, searchTerm);
-            if (items == null)
+            var result = await _mediator.Send(request);
+            if (result.Item1 != null)
             {
-                return BadRequest(Invalid("Nothing found using query"));
+                return BadRequest(result.Item1);
             }
-            return Ok(items);
-        }
-        [HttpGet("get-query/{ShopId}")]
-        public async Task<IActionResult> GetFromShop(Guid ShopId, [FromQuery] string searchTerm)
-        {
-            var items = await _itemService.GetItemsFromQuery(ShopId, searchTerm);
-            if (items == null)
-            {
-                return BadRequest(Invalid("Nothing found using query in this shop"));
-            }
-            return Ok(items);
+            return Ok(result.Item2);
         }
         [HttpGet("get-shop-items")]
         public async Task<IActionResult> GetItemsFromShop(Guid ShopId)
@@ -100,7 +91,7 @@ namespace Controllers
             }
             return Ok(result.Item2);
         }
-        [HttpDelete("delete-item")]
+        [HttpDelete("delete-item/{ItemId}")]
         public async Task<IActionResult> DeleteItem(Guid ItemId)
         {
             var data = await _itemService.DeleteItem(ItemId);
