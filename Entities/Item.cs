@@ -19,6 +19,8 @@ public partial class Item
 
     public string? Thumbnail { get; set; }
 
+    public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
+
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();

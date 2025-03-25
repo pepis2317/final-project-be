@@ -1,9 +1,11 @@
 using Entities;
+using final_project_backend.Models.Cart;
 using final_project_backend.Models.Item;
 using final_project_backend.Models.Order;
 using final_project_backend.Models.Shop;
 using final_project_backend.Models.Users;
 using final_project_backend.Services;
+using final_project_backend.Validators.Cart;
 using final_project_backend.Validators.Item;
 using final_project_backend.Validators.Order;
 using final_project_backend.Validators.Shop;
@@ -61,6 +63,9 @@ builder.Services.AddScoped<IValidator<EditItemRequest>, EditItemValidator>();
 builder.Services.AddScoped<IValidator<RegisterRequest>, RegisterValidator>();
 builder.Services.AddScoped<IValidator<CreateOrderRequest>, CreateOrderValidator>();
 builder.Services.AddScoped<IValidator<UpdateOrderRequest>, UpdateOrderValidator>();
+builder.Services.AddScoped<IValidator<ItemQuery>, ItemQueryValidator>();
+builder.Services.AddScoped<IValidator<CartItemRequest>, PostIncompleteCartValidator>();
+builder.Services.AddScoped<IValidator<CartItemEditRequest>, EditIncompleteCartValidator>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
 
 
@@ -70,6 +75,7 @@ builder.Services.AddScoped<ItemService>();
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<ProductImageService>();
 builder.Services.AddTransient<ShopService>();
+builder.Services.AddTransient<CartService>();
 builder.Services.AddSingleton<BlobStorageService>();
 builder.Services.AddSingleton<JwtService>();
 builder.Services.AddHostedService<OrderDetailUpdaterService>();
@@ -90,7 +96,7 @@ builder.WebHost.ConfigureKestrel(options =>
 var app = builder.Build();
 app.UseCors("AllowAll");
 app.UseCors(policy =>
-    policy.WithOrigins("http://localhost:3000") // Sesuaikan dengan port Next.js
+    policy.WithOrigins("http://localhost:8081") // Sesuaikan dengan port Next.js
           .AllowAnyMethod()
           .AllowAnyHeader()
 );

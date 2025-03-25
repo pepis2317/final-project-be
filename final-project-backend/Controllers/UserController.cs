@@ -48,7 +48,12 @@ namespace final_project_backend.Controllers
             }
             return Ok(data);
         }
-
+        [HttpGet("get-user-by-id")]
+        public async Task<IActionResult> Get([FromQuery]Guid UserId)
+        {
+            var data = await _service.Get(UserId);
+            return Ok(data);
+        }
         [HttpPut("update-user/{userId}")]
         public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UserUpdateRequest updatedUser)
         {

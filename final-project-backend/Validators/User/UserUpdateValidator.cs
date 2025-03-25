@@ -31,7 +31,7 @@ namespace final_project_backend.Validators.User
         private async Task<bool> IsValidPhone(UserUpdateRequest request, CancellationToken token)
         {
             var user = await _db.Users.FirstOrDefaultAsync(x => x.UserPhoneNumber == request.UserPhoneNumber, token);
-            if (user != null)
+            if (user != null && (request.UserId != user.UserId))
             {
                 return false;
             }
@@ -41,7 +41,7 @@ namespace final_project_backend.Validators.User
         private async Task<bool> IsValidUserName(UserUpdateRequest request, CancellationToken token)
         {
             var user = await _db.Users.FirstOrDefaultAsync(x => x.UserName == request.UserName, token);
-            if (user != null)
+            if (user != null && (request.UserId != user.UserId))
             {
                 return false;
             }

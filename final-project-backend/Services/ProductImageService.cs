@@ -15,7 +15,7 @@ namespace final_project_backend.Services
         }
         public async Task<List<ProductImageResponse>> GetImagesForItem(Guid itemId)
         {
-            var images = await _context.ProductImages.Where(q => q.ItemId == itemId).OrderBy(q=>q.IsPrimary).ToListAsync();
+            var images = await _context.ProductImages.Where(q => q.ItemId == itemId).OrderByDescending(q=>q.IsPrimary).ToListAsync();
             var imageNames = images.Select(i => i.Image).ToList();
             var imageUrls = await Task.WhenAll(imageNames.Select(ImageHelper));
             var result = images.Select((image, index) => new ProductImageResponse

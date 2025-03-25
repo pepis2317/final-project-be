@@ -59,6 +59,12 @@ namespace Controllers
             var orders = await _buyerService.GetOrdersByBuyerIdAsync(buyerId);
             return Ok(orders);
         }
+        [HttpGet("find-unconfirmed-order/{buyerId}")]
+        public async Task<IActionResult> GetUnconfirmedOrdersByBuyerId(Guid buyerId)
+        {
+            var orders = await _buyerService.GetUnconfirmedOrdersByBuyerIdAsync(buyerId);
+            return Ok(orders);
+        }
         [HttpPut("edit-order/{OrderId}")]
         public async Task<IActionResult> UpdateOrder(Guid OrderId, [FromBody] UpdateOrderRequest request)
         {
@@ -69,6 +75,12 @@ namespace Controllers
                 return BadRequest(result.Item1);
             }
             return Ok(result.Item2);
+        }
+        [HttpPut("confirm-order/{OrderId}")]
+        public async Task<IActionResult>ConfirmOrder(Guid OrderId)
+        {
+            var data = await _buyerService.ConfirmOrder(OrderId);
+            return Ok(data);
         }
     }
 }
