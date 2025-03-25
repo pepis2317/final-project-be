@@ -20,13 +20,21 @@ namespace Services
             string? imageUrl = await _blobStorageService.GetTemporaryImageUrl(fileName, "item-images");
             return imageUrl;
         }
-        public async Task<List<ItemResponse>?> GetItemsFromQuery(Guid? ShopId, string searchTerm)
+        public async Task<List<ItemResponse>?> GetItemsFromQuery(Guid? ShopId, string? searchTerm)
         {
-            var query = _context.Items.Include(q => q.Shop).AsQueryable().Where(q => 
-            q.ItemName.ToLower().Contains(searchTerm) ||
-            q.ItemDesc.ToLower().Contains(searchTerm)||
-            q.Shop.ShopName.ToLower().Contains(searchTerm)
-            );
+            var query = _context.Items.Include(q => q.Shop).AsQueryable();
+
+            // Apply search filter only if searchTerm is not null or empty
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                searchTerm = searchTerm.ToLower();
+                query = query.Where(q =>
+                    q.ItemName.ToLower().Contains(searchTerm) ||
+                    q.ItemDesc.ToLower().Contains(searchTerm) ||
+                    q.Shop.ShopName.ToLower().Contains(searchTerm)
+                );
+            }
+
             if (ShopId != null)
             {
                 query = query.Where(q=>q.ShopId == ShopId);
