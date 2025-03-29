@@ -13,6 +13,25 @@ namespace final_project_backend.Services
         {
             _db = db;
         }
+        public async Task<ShopModel?> GetShopByUserId(Guid UserId)
+        {
+            var shop= await _db.Shops.FirstOrDefaultAsync(q=>q.OwnerId == UserId);
+            if (shop != null)
+            {
+                var data = new ShopModel
+                {
+                    ShopId = shop.ShopId,
+                    ShopName = shop.ShopName,
+                    OwnerId = shop.OwnerId,
+                    Description = shop.Description,
+                    Rating = shop.Rating,
+                    Address = shop.Address,
+                    CreatedAt = shop.CreatedAt
+                };
+                return data;
+            }
+            return null;
+        }
         public async Task<List<ShopModel>> GetAllShops()
         {
             var shops = await _db.Shops.Include(q => q.Owner).Select(s => new ShopModel {
@@ -69,7 +88,7 @@ namespace final_project_backend.Services
                 CreatedAt = shop.CreatedAt
             };
         }
-        public async Task<ShopModel?> EditShop(EditOrderRequest request)
+        public async Task<ShopModel?> EditShop(EditShopRequest request)
         {
             var shop = await _db.Shops.FirstOrDefaultAsync(q=>q.ShopId == request.ShopId);
             if(shop != null)

@@ -84,11 +84,11 @@ namespace final_project_backend.Services
                 }
 
                 // Resize to target size (e.g., 200x200)
-                using var resizedImage = new Bitmap(200, 200);
+                using var resizedImage = new Bitmap(targetSize, targetSize);
                 using (var graphics = Graphics.FromImage(resizedImage))
                 {
                     graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                    graphics.DrawImage(croppedImage, 0, 0, 200, 200);
+                    graphics.DrawImage(croppedImage, 0, 0, targetSize, targetSize);
                 }
 
                 // Convert resized image to a stream

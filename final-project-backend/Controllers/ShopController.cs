@@ -30,6 +30,12 @@ namespace final_project_backend.Controllers
             };
             return problemDetails;
         }
+        [HttpGet("get-shop-by-owner/{UserId}")]
+        public async Task<IActionResult> GetShopByOwner(Guid UserId)
+        {
+            var data = await _service.GetShopByUserId(UserId);
+            return Ok(data);
+        }
         // GET: api/<ShopController>
         [HttpGet("get-all-shops")]
         public async Task<IActionResult> GetAllShops()
@@ -62,8 +68,9 @@ namespace final_project_backend.Controllers
             return Ok(result.Item2);
         }
         [HttpPut("edit-shop/{ShopId}")]
-        public async Task<IActionResult> EditShop(Guid ShopId, [FromBody] EditOrderRequest request)
+        public async Task<IActionResult> EditShop(Guid ShopId, [FromBody] EditShopRequest request)
         {
+            request.ShopId = ShopId;
             var result = await _mediator.Send(request);
             if (result.Item1 != null)
             {

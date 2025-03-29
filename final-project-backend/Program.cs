@@ -57,7 +57,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IValidator<LoginRequest>, LoginValidator>();
 builder.Services.AddScoped<IValidator<UserUpdateRequest>, UserUpdateValidator>();
 builder.Services.AddScoped<IValidator<CreateShopRequest>, CreateShopValidator>();
-builder.Services.AddScoped<IValidator<EditOrderRequest>, EditShopValidator>();
+builder.Services.AddScoped<IValidator<EditShopRequest>, EditShopValidator>();
 builder.Services.AddScoped<IValidator<CreateItemRequest>, CreateItemValidator>();
 builder.Services.AddScoped<IValidator<EditItemRequest>, EditItemValidator>();
 builder.Services.AddScoped<IValidator<RegisterRequest>, RegisterValidator>();

@@ -1,4 +1,5 @@
 ﻿using Entities;
+using final_project_backend.Models.Item;
 using final_project_backend.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,12 +22,12 @@ namespace final_project_backend.Controllers
             return Ok(data);
         }
         [HttpPost("upload-image-for-item")]
-        public async Task<IActionResult> UploadItemImage(Guid ItemId, IFormFile File)
+        public async Task<IActionResult> UploadItemImage(UploadItemImageRequest request)
         {
-            var fileName = $"{Guid.NewGuid()}_{File.FileName}";
-            var contentType = File.ContentType;
-            using var stream = File.OpenReadStream();
-            var blobUrl = await _service.UploadItemImage(ItemId, stream, fileName, contentType);
+            var fileName = $"{Guid.NewGuid()}_{request.file.FileName}";
+            var contentType = request.file.ContentType;
+            using var stream = request.file.OpenReadStream();
+            var blobUrl = await _service.UploadItemImage(request.ItemId, stream, fileName, contentType);
             return Ok(new { blobUrl });
         }
     }
