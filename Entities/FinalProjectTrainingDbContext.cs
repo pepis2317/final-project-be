@@ -1,15 +1,19 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
-namespace Entities
-{
-    public partial class FinalProjectTrainingDbContext : DbContext
-    {
-        public FinalProjectTrainingDbContext() { }
+namespace Entities;
 
-        public FinalProjectTrainingDbContext(DbContextOptions<FinalProjectTrainingDbContext> options)
-            : base(options) { }
+public partial class FinalProjectTrainingDbContext : DbContext
+{
+    public FinalProjectTrainingDbContext()
+    {
+    }
+
+    public FinalProjectTrainingDbContext(DbContextOptions<FinalProjectTrainingDbContext> options)
+        : base(options)
+    {
+    }
 
     public virtual DbSet<Cart> Carts { get; set; }
 
@@ -31,6 +35,12 @@ namespace Entities
 
     public virtual DbSet<User> Users { get; set; }
 
+
+    //public DbSet<Chat> Chats { get; set; }
+    //public DbSet<ChatUser> ChatUser { get; set; }
+    //public DbSet<Message> Messages { get; set; }
+
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
@@ -40,6 +50,13 @@ namespace Entities
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<ChatChat>().ToTable("Chat_Chats");
+        modelBuilder.Entity<ChatUser>().ToTable("Chat_Users");
+        modelBuilder.Entity<ChatMessage>().ToTable("Chat_Messages");
+
+
         modelBuilder.Entity<Cart>(entity =>
         {
             entity.HasKey(e => e.CartId).HasName("PK__carts__2EF52A27B24DA9E9");
@@ -143,22 +160,41 @@ namespace Entities
 
             entity.ToTable("item");
 
-                entity.Property(e => e.ItemId).HasDefaultValueSql("(newid())");
-                entity.Property(e => e.ItemName).HasMaxLength(255).IsUnicode(false);
-                entity.Property(e => e.ItemDesc).HasMaxLength(255).IsUnicode(false);
-                entity.Property(e => e.Thumbnail).HasMaxLength(255).IsUnicode(false);
+            entity.HasIndex(e => e.ItemName, "UQ__item__ACA52A97D059E7C4").IsUnique();
 
-                entity.HasOne(d => d.Shop)
-                    .WithMany(p => p.Items)
-                    .HasForeignKey(d => d.ShopId)
-                    .HasConstraintName("FK_item_shop_id");
-            });
+            entity.Property(e => e.ItemId)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("item_id");
+            entity.Property(e => e.HargaPerItem)
+                .HasDefaultValue(0)
+                .HasColumnName("harga_per_item");
+            entity.Property(e => e.ItemDesc)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("item_desc");
+            entity.Property(e => e.ItemName)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("item_name");
+            entity.Property(e => e.Quantity)
+                .HasDefaultValue(0)
+                .HasColumnName("quantity");
+            entity.Property(e => e.ShopId).HasColumnName("shop_id");
+            entity.Property(e => e.Thumbnail)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("thumbnail");
 
-            // Order
-            modelBuilder.Entity<Order>(entity =>
-            {
-                entity.HasKey(e => e.OrderId);
-                entity.ToTable("orders");
+            entity.HasOne(d => d.Shop).WithMany(p => p.Items)
+                .HasForeignKey(d => d.ShopId)
+                .HasConstraintName("FK_item_shop_id");
+        });
+
+        modelBuilder.Entity<Order>(entity =>
+        {
+            entity.HasKey(e => e.OrderId).HasName("PK__orders__F1FF845341271034");
+
+            entity.ToTable("orders");
 
             entity.Property(e => e.OrderId)
                 .HasDefaultValueSql("(newid())")
@@ -185,112 +221,133 @@ namespace Entities
                 .HasDefaultValue(0)
                 .HasColumnName("total_harga");
 
-                entity.HasOne(d => d.Buyer)
-                    .WithMany(p => p.Orders)
-                    .HasForeignKey(d => d.BuyerId)
-                    .HasConstraintName("FK__orders__Buyer_id");
+            entity.HasOne(d => d.Buyer).WithMany(p => p.Orders)
+                .HasForeignKey(d => d.BuyerId)
+                .HasConstraintName("FK__orders__Buyer_id__0D7A0286");
 
-                entity.HasOne(d => d.Item)
-                    .WithMany(p => p.Orders)
-                    .HasForeignKey(d => d.ItemId)
-                    .HasConstraintName("FK__orders__Item_id");
-            });
+            entity.HasOne(d => d.Item).WithMany(p => p.Orders)
+                .HasForeignKey(d => d.ItemId)
+                .HasConstraintName("FK__orders__Item_id__0E6E26BF");
+        });
 
-            // ProductImage
-            modelBuilder.Entity<ProductImage>(entity =>
-            {
-                entity.HasKey(e => e.ImageId);
-                entity.ToTable("productImages");
+        modelBuilder.Entity<ProductImage>(entity =>
+        {
+            entity.HasKey(e => e.ImageId).HasName("PK__productI__3CAC59117B8AA3BA");
 
-                entity.Property(e => e.ImageId).HasDefaultValueSql("(newid())");
-                entity.Property(e => e.Image).HasMaxLength(255).IsUnicode(false);
-                entity.Property(e => e.IsPrimary).HasMaxLength(50).IsUnicode(false).HasDefaultValue("false");
+            entity.ToTable("productImages");
 
-                entity.HasOne(d => d.Item)
-                    .WithMany(p => p.ProductImages)
-                    .HasForeignKey(d => d.ItemId)
-                    .HasConstraintName("FK__productIm__Item");
-            });
+            entity.Property(e => e.ImageId)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("Image_id");
+            entity.Property(e => e.Image)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.IsPrimary)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasDefaultValue("false")
+                .IsFixedLength()
+                .HasColumnName("Is_primary");
+            entity.Property(e => e.ItemId).HasColumnName("Item_id");
 
-            // Shop
-            modelBuilder.Entity<Shop>(entity =>
-            {
-                entity.HasKey(e => e.ShopId);
-                entity.ToTable("Shop");
+            entity.HasOne(d => d.Item).WithMany(p => p.ProductImages)
+                .HasForeignKey(d => d.ItemId)
+                .HasConstraintName("FK__productIm__Item___1BC821DD");
+        });
 
-                entity.Property(e => e.ShopId).HasDefaultValueSql("(newid())");
-                entity.Property(e => e.ShopName).HasMaxLength(255).IsUnicode(false);
-                entity.Property(e => e.Address).HasMaxLength(255).IsUnicode(false);
-                entity.Property(e => e.Description).HasMaxLength(255).IsUnicode(false);
-                entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+        modelBuilder.Entity<Shop>(entity =>
+        {
+            entity.HasKey(e => e.ShopId).HasName("PK__Shop__5C0F82B8317FE30A");
 
-                entity.HasOne(d => d.Owner)
-                    .WithMany(p => p.Shops)
-                    .HasForeignKey(d => d.OwnerId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_shop_owner_id");
-            });
+            entity.ToTable("Shop");
 
-            // User
-            modelBuilder.Entity<User>(entity =>
-            {
-                entity.HasKey(e => e.UserId);
-                entity.ToTable("users");
+            entity.HasIndex(e => e.ShopName, "UQ__Shop__F265FA7AA61DB603").IsUnique();
 
-                entity.Property(e => e.UserId).HasDefaultValueSql("(newid())");
-                entity.Property(e => e.UserName).HasMaxLength(255).IsUnicode(false);
-                entity.Property(e => e.UserPassword).HasMaxLength(255).IsUnicode(false);
-                entity.Property(e => e.UserEmail).HasMaxLength(255).IsUnicode(false);
-                entity.Property(e => e.UserPhoneNumber).HasMaxLength(255).IsUnicode(false);
-                entity.Property(e => e.UserProfile).HasMaxLength(255).IsUnicode(false);
-                entity.Property(e => e.UserAddress).HasMaxLength(255).IsUnicode(false);
-                entity.Property(e => e.RefreshToken).HasMaxLength(255).IsUnicode(false);
-            });
+            entity.Property(e => e.ShopId)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("Shop_id");
+            entity.Property(e => e.Address)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("Created_at");
+            entity.Property(e => e.Description)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.OwnerId).HasColumnName("Owner_id");
+            entity.Property(e => e.Rating).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.ShopName)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("Shop_name");
 
-            // ChatUser ↔ User (Many-to-One)
-            modelBuilder.Entity<ChatUser>()
-                .HasOne<User>()
-                .WithMany(u => u.ChatUsers)
-                .HasForeignKey(cu => cu.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(d => d.Owner).WithMany(p => p.Shops)
+                .HasForeignKey(d => d.OwnerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_shop_owner_id");
+        });
 
-            // Chat ↔ ChatUser (User and Seller)
-            modelBuilder.Entity<Chat>()
-                .HasOne(c => c.User)
-                .WithMany(cu => cu.UserChats)
-                .HasForeignKey(c => c.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.UserId).HasName("PK__users__B9BE370F0EA657DD");
 
-            modelBuilder.Entity<Chat>()
-                .HasOne(c => c.Seller)
-                .WithMany(cu => cu.SellerChats)
-                .HasForeignKey(c => c.SellerId)
-                .OnDelete(DeleteBehavior.Restrict);
+            entity.ToTable("users");
 
-            // Chat ↔ ChatUsers (One Chat has many ChatUsers)
-            modelBuilder.Entity<Chat>()
-                .HasMany(c => c.ChatUsers)
-                .WithOne()
-                .HasForeignKey(cu => cu.ChatId)
-                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.UserEmail, "UQ__users__B0FBA212E391237E").IsUnique();
 
-            // Message ↔ Chat
-            modelBuilder.Entity<Message>()
-                .HasOne(m => m.Chat)
-                .WithMany(c => c.Messages)
-                .HasForeignKey(m => m.ChatId)
-                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.UserPhoneNumber, "UQ__users__D5D775E81DFBDDF5").IsUnique();
 
-            // Message ↔ ChatUser (Sender)
-            modelBuilder.Entity<Message>()
-                .HasOne(m => m.Sender)
-                .WithMany(cu => cu.Messages)
-                .HasForeignKey(m => m.SenderId)
-                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => e.UserName, "unique_user_name").IsUnique();
 
-            OnModelCreatingPartial(modelBuilder);
-        }
+            entity.Property(e => e.UserId)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("user_id");
+            entity.Property(e => e.BirthDate).HasColumnName("birth_date");
+            entity.Property(e => e.Gender)
+                .HasMaxLength(1)
+                .IsUnicode(false)
+                .IsFixedLength()
+                .HasColumnName("gender");
+            entity.Property(e => e.RefreshToken)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("refresh_token");
+            entity.Property(e => e.RefreshTokenExpiryTime)
+                .HasColumnType("datetime")
+                .HasColumnName("refresh_token_expiry_time");
+            entity.Property(e => e.UserAddress)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("user_address");
+            entity.Property(e => e.UserBalance)
+                .HasDefaultValue(0)
+                .HasColumnName("user_balance");
+            entity.Property(e => e.UserEmail)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("user_email");
+            entity.Property(e => e.UserName)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("user_name");
+            entity.Property(e => e.UserPassword)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("user_password");
+            entity.Property(e => e.UserPhoneNumber)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("user_phone_number");
+            entity.Property(e => e.UserProfile)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("user_profile");
+        });
 
-        partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+        OnModelCreatingPartial(modelBuilder);
     }
+
+    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 // Alias untuk hindari konflik nama namespace vs class
-using MessageEntity = Entities.Message;
+using MessageEntity = Entities.ChatMessage;
 
 namespace final_project_backend.Handlers.Message
 {
@@ -30,9 +30,9 @@ namespace final_project_backend.Handlers.Message
                 CreatedAt = DateTime.UtcNow
             };
 
-            _context.Messages.Add(message);
+            _context.ChatMessages.Add(message);
 
-            var chat = await _context.Chats.FirstOrDefaultAsync(c => c.Id == request.ChatId, cancellationToken);
+            var chat = await _context.ChatChats.FirstOrDefaultAsync(c => c.Id == request.ChatId, cancellationToken);
             if (chat != null)
             {
                 chat.LastMessage = request.MessageText;
@@ -40,6 +40,9 @@ namespace final_project_backend.Handlers.Message
             }
 
             await _context.SaveChangesAsync(cancellationToken);
+
+            await _context.Entry(message).Reference(m => m.Sender).LoadAsync(cancellationToken);
+
             return message;
         }
     }

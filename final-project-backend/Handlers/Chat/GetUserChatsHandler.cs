@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Handlers.Chat
 {
-    public class GetUserChatsHandler : IRequestHandler<GetUserChatsQuery, List<Entities.Chat>>
+    public class GetUserChatsHandler : IRequestHandler<GetUserChatsQuery, List<Entities.ChatChat>>
     {
         private readonly FinalProjectTrainingDbContext _context;
 
@@ -19,9 +19,9 @@ namespace Handlers.Chat
             _context = context;
         }
 
-        public async Task<List<Entities.Chat>> Handle(GetUserChatsQuery request, CancellationToken cancellationToken)
+        public async Task<List<Entities.ChatChat>> Handle(GetUserChatsQuery request, CancellationToken cancellationToken)
         {
-            var chats = await _context.Chats
+            var chats = await _context.ChatChats
                 .Include(c => c.User)
                 .Include(c => c.Seller)
                 .Where(c => c.UserId == request.UserId || c.SellerId == request.UserId)

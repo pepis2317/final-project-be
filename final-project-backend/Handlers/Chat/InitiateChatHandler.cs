@@ -1,5 +1,4 @@
-﻿using ChatEntity = Entities.Chat; // alias untuk hindari konflik
-using Entities;
+﻿using Entities;
 using final_project_backend.Commands.Chat;
 using final_project_backend.Models;
 using MediatR;
@@ -7,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
+using ChatEntity = Entities.ChatChat;
 
 namespace final_project_backend.Handlers.Chat
 {
@@ -21,8 +22,7 @@ namespace final_project_backend.Handlers.Chat
 
         public async Task<Guid> Handle(InitiateChatCommand request, CancellationToken cancellationToken)
         {
-            // Cek apakah chat antara dua user ini sudah ada (baik sebagai user/seller maupun seller/user)
-            var existingChat = await _context.Chats
+            var existingChat = await _context.ChatChats
                 .FirstOrDefaultAsync(c =>
                     (c.UserId == request.SenderId && c.SellerId == request.ReceiverId) ||
                     (c.UserId == request.ReceiverId && c.SellerId == request.SenderId),
@@ -41,7 +41,7 @@ namespace final_project_backend.Handlers.Chat
                 UpdatedAt = DateTime.UtcNow
             };
 
-            await _context.Chats.AddAsync(newChat, cancellationToken);
+            await _context.ChatChats.AddAsync(newChat, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
             return newChat.Id;

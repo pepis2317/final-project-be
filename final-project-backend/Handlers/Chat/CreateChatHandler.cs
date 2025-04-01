@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Handlers.Chat
 {
-    public class CreateChatHandler : IRequestHandler<CreateChatCommand, Entities.Chat>
+    public class CreateChatHandler : IRequestHandler<CreateChatCommand, ChatChat>
     {
         private readonly FinalProjectTrainingDbContext _context;
 
@@ -17,9 +17,9 @@ namespace Handlers.Chat
             _context = context;
         }
 
-        public async Task<Entities.Chat> Handle(CreateChatCommand request, CancellationToken cancellationToken)
+        public async Task<ChatChat> Handle(CreateChatCommand request, CancellationToken cancellationToken)
         {
-            var existingChat = await _context.Chats.FirstOrDefaultAsync(
+            var existingChat = await _context.ChatChats.FirstOrDefaultAsync(
                 c => c.UserId == request.UserId && c.SellerId == request.SellerId,
                 cancellationToken
             );
@@ -29,14 +29,14 @@ namespace Handlers.Chat
                 return existingChat;
             }
 
-            var newChat = new Entities.Chat
+            var newChat = new ChatChat
             {
                 UserId = request.UserId,
                 SellerId = request.SellerId,
                 UpdatedAt = DateTime.UtcNow
             };
 
-            _context.Chats.Add(newChat);
+            _context.ChatChats.Add(newChat);
             await _context.SaveChangesAsync(cancellationToken);
 
             return newChat;

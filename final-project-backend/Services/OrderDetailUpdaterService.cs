@@ -25,10 +25,10 @@ namespace final_project_backend.Services
 
         private async Task UpdateOrderStatusesAsync()
         {
-            using (var scope = _scopeFactory.CreateScope()) // Create a new scope
+            using (var scope = _scopeFactory.CreateScope()) 
             {
-                var orderService = scope.ServiceProvider.GetRequiredService<OrderService>(); // Resolve scoped service
-                await orderService.UpdateOrderDetail(); // Call the method
+                var orderService = scope.ServiceProvider.GetRequiredService<OrderService>(); 
+                await orderService.UpdateOrderDetail(); 
             }
         }
     }

@@ -24,7 +24,6 @@ namespace Services
         {
             var query = _context.Items.Include(q => q.Shop).AsQueryable();
 
-            // Apply search filter only if searchTerm is not null or empty
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 searchTerm = searchTerm.ToLower();

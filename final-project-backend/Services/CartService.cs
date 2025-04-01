@@ -22,7 +22,7 @@ namespace final_project_backend.Services
         public async Task<bool> CheckInCart(Guid UserId, Guid ItemId)
         {
             var data = await _db.CartItems.Where(ci => ci.Cart.BuyerId == UserId && ci.ItemId == ItemId && ci.Cart.CompletedAt == null).FirstOrDefaultAsync();
-            if(data == null)
+            if (data == null)
             {
                 return false;
             }
@@ -33,7 +33,7 @@ namespace final_project_backend.Services
         {
             var cartItems = await _db.CartItems.Where(ci => ci.Cart.CartId == _db.Carts.Where(c => c.BuyerId == UserId && c.CompletedAt == null).Select(c => c.CartId).FirstOrDefault()).ToListAsync();
             var result = new List<CartItemResponse>();
-            foreach(var cartItem in cartItems)
+            foreach (var cartItem in cartItems)
             {
                 var item = await _itemService.GetItemById(cartItem.ItemId);
                 result.Add(new CartItemResponse
@@ -81,12 +81,12 @@ namespace final_project_backend.Services
         }
         public async Task<CartItemResponse?> EditIncompleteCartItem(CartItemEditRequest request)
         {
-            var data = await _db.CartItems.FirstOrDefaultAsync(q=>q.CartItemId == request.CartItemId);
+            var data = await _db.CartItems.FirstOrDefaultAsync(q => q.CartItemId == request.CartItemId);
             if (data == null)
             {
                 return null;
             }
-            data.Quantity = request.Quantity!=null? (int)request.Quantity: data.Quantity;
+            data.Quantity = request.Quantity != null ? (int)request.Quantity : data.Quantity;
             if (request.Quantity == null)
             {
                 await DeleteIncompleteCartItem(request.CartItemId);
@@ -103,7 +103,7 @@ namespace final_project_backend.Services
         }
         public async Task<string?> DeleteIncompleteCartItem(Guid CartItemId)
         {
-            var data = await _db.CartItems.FirstOrDefaultAsync(q=>q.CartItemId==CartItemId);
+            var data = await _db.CartItems.FirstOrDefaultAsync(q => q.CartItemId == CartItemId);
             if (data == null)
             {
                 return null;
@@ -131,7 +131,7 @@ namespace final_project_backend.Services
                     BuyerId = UserId,
                     ItemId = item.ItemId,
                     Quantity = item.Quantity,
-                    TotalHarga = item.Item.HargaPerItem
+                    TotalHarga = item.Item.HargaPerItem ?? 0
                 });
             }
             return new CartResponse
@@ -144,3 +144,4 @@ namespace final_project_backend.Services
 
     }
 }
+

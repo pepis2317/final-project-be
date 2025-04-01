@@ -21,8 +21,35 @@ namespace final_project_backend.Handlers.Chat
 
         public async Task<Guid> Handle(InitiateChatCommand request, CancellationToken cancellationToken)
         {
-            // Cek apakah chat antara user dan seller sudah ada
-            var existingChat = await _context.Chats
+            var sender = await _context.ChatUsers.FindAsync(new object[] { request.SenderId }, cancellationToken);
+            if (sender == null)
+            {
+                sender = new ChatUser
+                {
+                    Id = request.SenderId,
+                    Name = "User",        
+                    Role = "user",        
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.ChatUsers.Add(sender);
+            }
+
+            var receiver = await _context.ChatUsers.FindAsync(new object[] { request.ReceiverId }, cancellationToken);
+            if (receiver == null)
+            {
+                receiver = new ChatUser
+                {
+                    Id = request.ReceiverId,
+                    Name = "Seller",      
+                    Role = "seller",
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.ChatUsers.Add(receiver);
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            var existingChat = await _context.ChatChats
                 .FirstOrDefaultAsync(c =>
                     (c.UserId == request.SenderId && c.SellerId == request.ReceiverId) ||
                     (c.UserId == request.ReceiverId && c.SellerId == request.SenderId),
@@ -31,8 +58,7 @@ namespace final_project_backend.Handlers.Chat
             if (existingChat != null)
                 return existingChat.Id;
 
-            // Buat chat baru
-            var newChat = new Entities.Chat
+            var newChat = new ChatChat
             {
                 Id = Guid.NewGuid(),
                 UserId = request.SenderId,
@@ -40,32 +66,11 @@ namespace final_project_backend.Handlers.Chat
                 UpdatedAt = DateTime.UtcNow
             };
 
-            // Buat ChatUser untuk user
-            var userChatUser = new ChatUser
-            {
-                Id = Guid.NewGuid(),
-                ChatId = newChat.Id,
-                UserId = request.SenderId,
-                Role = "user",
-                CreatedAt = DateTime.UtcNow
-            };
-
-            // Buat ChatUser untuk seller
-            var sellerChatUser = new ChatUser
-            {
-                Id = Guid.NewGuid(),
-                ChatId = newChat.Id,
-                SellerId = request.ReceiverId,
-                Role = "seller",
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _context.Chats.Add(newChat);
-            _context.ChatUsers.AddRange(userChatUser, sellerChatUser);
-
+            _context.ChatChats.Add(newChat);
             await _context.SaveChangesAsync(cancellationToken);
 
             return newChat.Id;
         }
+
     }
 }

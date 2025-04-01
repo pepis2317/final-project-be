@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 // Alias untuk menghindari bentrok dengan namespace
-using MessageEntity = Entities.Message;
+using MessageEntity = Entities.ChatMessage;
 
 namespace final_project_backend.Handlers.Message
 {
@@ -23,7 +23,7 @@ namespace final_project_backend.Handlers.Message
 
         public async Task<List<MessageEntity>> Handle(GetMessagesByChatIdQuery request, CancellationToken cancellationToken)
         {
-            return await _context.Messages
+            return await _context.ChatMessages
                 .Include(m => m.Sender)
                 .Where(m => m.ChatId == request.ChatId)
                 .OrderBy(m => m.CreatedAt)

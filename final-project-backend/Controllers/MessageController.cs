@@ -21,7 +21,6 @@ namespace final_project_backend.Controllers
             _mediator = mediator;
         }
 
-        // GET api/v1/message/chat/{chatId}
         [HttpGet("chat/{chatId}")]
         public async Task<IActionResult> GetMessagesByChatId(Guid chatId)
         {
@@ -29,12 +28,13 @@ namespace final_project_backend.Controllers
             return Ok(result);
         }
 
-        // POST api/v1/message
         [HttpPost]
         public async Task<IActionResult> SendMessage([FromBody] CreateMessageCommand command)
         {
             var result = await _mediator.Send(command);
             return Ok(result);
         }
+
+
     }
 }
