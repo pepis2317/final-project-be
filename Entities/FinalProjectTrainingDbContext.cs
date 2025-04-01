@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -35,6 +35,12 @@ public partial class FinalProjectTrainingDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+
+    //public DbSet<Chat> Chats { get; set; }
+    //public DbSet<ChatUser> ChatUser { get; set; }
+    //public DbSet<Message> Messages { get; set; }
+
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
@@ -44,6 +50,13 @@ public partial class FinalProjectTrainingDbContext : DbContext
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<ChatChat>().ToTable("Chat_Chats");
+        modelBuilder.Entity<ChatUser>().ToTable("Chat_Users");
+        modelBuilder.Entity<ChatMessage>().ToTable("Chat_Messages");
+
+
         modelBuilder.Entity<Cart>(entity =>
         {
             entity.HasKey(e => e.CartId).HasName("PK__carts__2EF52A27B24DA9E9");

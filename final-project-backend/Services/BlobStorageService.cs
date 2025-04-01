@@ -34,7 +34,7 @@ namespace final_project_backend.Services
                 BlobContainerName = containerName,
                 BlobName = fileName,
                 Resource = "b",
-                StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5), // Start slightly earlier to avoid timing issues
+                StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
                 ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(10),
             };
 
@@ -65,18 +65,15 @@ namespace final_project_backend.Services
         {
             try
             {
-                // Convert stream to an Image object
                 using var image = Image.FromStream(imageStream);
 
                 int width = image.Width;
                 int height = image.Height;
 
-                // Calculate cropping area to make it 1:1 (centered)
                 int size = Math.Min(width, height);
                 int x = (width - size) / 2;
                 int y = (height - size) / 2;
 
-                // Crop to square
                 using var croppedImage = new Bitmap(size, size);
                 using (var graphics = Graphics.FromImage(croppedImage))
                 {
@@ -91,9 +88,8 @@ namespace final_project_backend.Services
                     graphics.DrawImage(croppedImage, 0, 0, targetSize, targetSize);
                 }
 
-                // Convert resized image to a stream
                 using var memoryStream = new MemoryStream();
-                resizedImage.Save(memoryStream, ImageFormat.Jpeg); // Change format if needed
+                resizedImage.Save(memoryStream, ImageFormat.Jpeg); 
                 memoryStream.Position = 0;
 
                 var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);

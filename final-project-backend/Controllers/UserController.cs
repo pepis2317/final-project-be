@@ -120,5 +120,16 @@ namespace final_project_backend.Controllers
             }
             return Ok(data);
         }
+
+        [HttpGet("find-user/{userId}")]
+        public async Task<IActionResult> GetUserById(Guid userId)
+        {
+            var user = await _service.Get(userId);
+            if (user == null)
+            {
+                return NotFound(Invalid("User not found"));
+            }
+            return Ok(user);
+        }
     }
 }

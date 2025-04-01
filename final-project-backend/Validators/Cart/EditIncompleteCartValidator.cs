@@ -7,6 +7,7 @@ namespace final_project_backend.Validators.Cart
 {
     public class EditIncompleteCartValidator : AbstractValidator<CartItemEditRequest>
     {
+        /*Random Push*/
         private readonly FinalProjectTrainingDbContext _db;
         public EditIncompleteCartValidator(FinalProjectTrainingDbContext db)
         {

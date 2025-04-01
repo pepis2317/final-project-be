@@ -18,6 +18,7 @@ using Microsoft.IdentityModel.Tokens;
 using Services;
 using System.Reflection;
 using System.Text;
+using final_project_backend.Handlers.Message;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -39,7 +40,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEntityFrameworkSqlServer();
@@ -49,11 +49,22 @@ builder.Services.AddDbContextPool<FinalProjectTrainingDbContext>(options =>
     options.UseSqlServer(conString);
 });
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
+
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Misc
 builder.Services.AddDataProtection();
 builder.Services.AddHttpContextAccessor();
+
+// Validators
 builder.Services.AddScoped<IValidator<LoginRequest>, LoginValidator>();
 builder.Services.AddScoped<IValidator<UserUpdateRequest>, UserUpdateValidator>();
 builder.Services.AddScoped<IValidator<CreateShopRequest>, CreateShopValidator>();
@@ -66,10 +77,16 @@ builder.Services.AddScoped<IValidator<UpdateOrderRequest>, UpdateOrderValidator>
 builder.Services.AddScoped<IValidator<ItemQuery>, ItemQueryValidator>();
 builder.Services.AddScoped<IValidator<CartItemRequest>, PostIncompleteCartValidator>();
 builder.Services.AddScoped<IValidator<CartItemEditRequest>, EditIncompleteCartValidator>();
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
 
+// MediatR
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssemblies(
+        typeof(CreateMessageHandler).Assembly 
+    );
+});
 
-
+// Services
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ItemService>();
 builder.Services.AddTransient<UserService>();
@@ -79,6 +96,13 @@ builder.Services.AddTransient<CartService>();
 builder.Services.AddSingleton<BlobStorageService>();
 builder.Services.AddSingleton<JwtService>();
 builder.Services.AddHostedService<OrderDetailUpdaterService>();
+
+// Tambahan: Services untuk sistem Chat
+builder.Services.AddScoped<ChatService>();
+builder.Services.AddScoped<MessageService>();
+builder.Services.AddScoped<ChatUserService>();
+
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -88,12 +112,15 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod();
     });
 });
+
+// Kestrel
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenAnyIP(5252); // Allows connections from any IP
 });
 
 var app = builder.Build();
+
 app.UseCors("AllowAll");
 app.UseCors(policy =>
     policy.WithOrigins("http://localhost:8081") // Sesuaikan dengan port Next.js
@@ -101,7 +128,7 @@ app.UseCors(policy =>
           .AllowAnyHeader()
 );
 
-// Configure the HTTP request pipeline.
+// Swagger UI
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
