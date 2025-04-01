@@ -80,11 +80,12 @@ namespace final_project_backend.Services
                     graphics.DrawImage(image, new Rectangle(0, 0, size, size), new Rectangle(x, y, size, size), GraphicsUnit.Pixel);
                 }
 
-                using var resizedImage = new Bitmap(200, 200);
+                // Resize to target size (e.g., 200x200)
+                using var resizedImage = new Bitmap(targetSize, targetSize);
                 using (var graphics = Graphics.FromImage(resizedImage))
                 {
                     graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                    graphics.DrawImage(croppedImage, 0, 0, 200, 200);
+                    graphics.DrawImage(croppedImage, 0, 0, targetSize, targetSize);
                 }
 
                 using var memoryStream = new MemoryStream();

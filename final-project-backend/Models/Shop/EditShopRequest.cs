@@ -4,7 +4,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace final_project_backend.Models.Shop
 {
-    public class EditOrderRequest : IRequest<(ProblemDetails?, ShopModel?)>
+    public class EditShopRequest : IRequest<(ProblemDetails?, ShopModel?)>
     {
         [SwaggerIgnore]
         public Guid ShopId { get; set; }

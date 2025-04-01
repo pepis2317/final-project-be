@@ -6,18 +6,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace final_project_backend.Handlers.Shop
 {
-    public class EditShopHandler : IRequestHandler<EditOrderRequest, (ProblemDetails?, ShopModel?)>
+    public class EditShopHandler : IRequestHandler<EditShopRequest, (ProblemDetails?, ShopModel?)>
     {
         private readonly ShopService _service;
-        private readonly IValidator<EditOrderRequest> _validator;
+        private readonly IValidator<EditShopRequest> _validator;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public EditShopHandler(ShopService service, IValidator<EditOrderRequest> validator, IHttpContextAccessor httpContextAccessor)
+        public EditShopHandler(ShopService service, IValidator<EditShopRequest> validator, IHttpContextAccessor httpContextAccessor)
         {
             _service = service;
             _validator = validator;
             _httpContextAccessor = httpContextAccessor;
         }
-        public async Task<(ProblemDetails?, ShopModel?)> Handle(EditOrderRequest request, CancellationToken cancellationToken)
+        public async Task<(ProblemDetails?, ShopModel?)> Handle(EditShopRequest request, CancellationToken cancellationToken)
         {
             var validation = await _validator.ValidateAsync(request);
             if (!validation.IsValid)
