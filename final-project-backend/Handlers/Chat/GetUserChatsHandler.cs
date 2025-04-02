@@ -18,6 +18,7 @@ namespace Handlers.Chat
 
         public GetUserChatsHandler(ChatService service)
         {
+            //kok merah
             _service = service;
         }
 
