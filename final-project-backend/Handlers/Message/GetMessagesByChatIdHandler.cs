@@ -9,25 +9,24 @@ using System.Threading.Tasks;
 
 // Alias untuk menghindari bentrok dengan namespace
 using MessageEntity = Entities.ChatMessage;
+using Services;
+using final_project_backend.Models.Message;
 
 namespace final_project_backend.Handlers.Message
 {
-    public class GetMessagesByChatIdHandler : IRequestHandler<GetMessagesByChatIdQuery, List<MessageEntity>>
+    public class GetMessagesByChatIdHandler : IRequestHandler<GetMessagesByChatIdQuery, List<MessageResponse>>
     {
-        private readonly FinalProjectTrainingDbContext _context;
+        private readonly MessageService _service;
 
-        public GetMessagesByChatIdHandler(FinalProjectTrainingDbContext context)
+        public GetMessagesByChatIdHandler(MessageService service)
         {
-            _context = context;
+            _service = service;
         }
 
-        public async Task<List<MessageEntity>> Handle(GetMessagesByChatIdQuery request, CancellationToken cancellationToken)
+        public async Task<List<MessageResponse>> Handle(GetMessagesByChatIdQuery request, CancellationToken cancellationToken)
         {
-            return await _context.ChatMessages
-                .Include(m => m.Sender)
-                .Where(m => m.ChatId == request.ChatId)
-                .OrderBy(m => m.CreatedAt)
-                .ToListAsync(cancellationToken);
+            var data = await _service.GetMessagesByChatIdAsync(request.ChatId);
+            return data;
         }
     }
 }

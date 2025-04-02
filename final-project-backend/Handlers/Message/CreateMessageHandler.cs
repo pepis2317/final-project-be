@@ -8,42 +8,23 @@ using System.Threading.Tasks;
 
 // Alias untuk hindari konflik nama namespace vs class
 using MessageEntity = Entities.ChatMessage;
+using Services;
 
 namespace final_project_backend.Handlers.Message
 {
     public class CreateMessageHandler : IRequestHandler<CreateMessageCommand, MessageEntity>
     {
-        private readonly FinalProjectTrainingDbContext _context;
+        private readonly MessageService _service;
 
-        public CreateMessageHandler(FinalProjectTrainingDbContext context)
+        public CreateMessageHandler(MessageService service)
         {
-            _context = context;
+            _service = service;
         }
 
         public async Task<MessageEntity> Handle(CreateMessageCommand request, CancellationToken cancellationToken)
         {
-            var message = new MessageEntity
-            {
-                ChatId = request.ChatId,
-                SenderId = request.SenderId,
-                MessageText = request.MessageText,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _context.ChatMessages.Add(message);
-
-            var chat = await _context.ChatChats.FirstOrDefaultAsync(c => c.Id == request.ChatId, cancellationToken);
-            if (chat != null)
-            {
-                chat.LastMessage = request.MessageText;
-                chat.UpdatedAt = DateTime.UtcNow;
-            }
-
-            await _context.SaveChangesAsync(cancellationToken);
-
-            await _context.Entry(message).Reference(m => m.Sender).LoadAsync(cancellationToken);
-
-            return message;
+            var data = await _service.CreateMessage(request);
+            return data;
         }
     }
 }
