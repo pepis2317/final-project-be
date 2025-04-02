@@ -5,6 +5,7 @@ using final_project_backend.Queries.Chat;
 using System;
 using System.Threading.Tasks;
 using final_project_backend.Commands.Chat;
+using Services;
 
 namespace final_project_backend.Controllers
 {
@@ -13,16 +14,19 @@ namespace final_project_backend.Controllers
     public class ChatController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly ChatService _service;
 
-        public ChatController(IMediator mediator)
+        public ChatController(IMediator mediator, ChatService service)
         {
             _mediator = mediator;
+            _service = service;
         }
 
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetChatsByUserId(Guid userId)
         {
-            var result = await _mediator.Send(new GetUserChatsQuery(userId));
+            //var result = await _mediator.Send(new GetUserChatsQuery(userId));
+            var result = await _service.GetChatsByUserId(userId);
             return Ok(result);
         }
 
