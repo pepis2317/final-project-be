@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 using Entities;
+using final_project_backend.Commands.Chat;
 using final_project_backend.Models.Chat;
 using final_project_backend.Services;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,56 @@ namespace Services
         {
             string? imageUrl = await _blobStorageService.GetTemporaryImageUrl(fileName, "user-pfps");
             return imageUrl;
+        }
+        public async Task<Guid> InitializeChat(InitiateChatCommand request)
+        {
+            var sender = await _context.ChatUsers.FirstOrDefaultAsync(q=>q.Id==request.SenderId);
+            if (sender == null)
+            {
+                sender = new ChatUser
+                {
+                    Id = request.SenderId,
+                    Name = "User",
+                    Role = "user",
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.ChatUsers.Add(sender);
+            }
+
+            var receiver = await _context.ChatUsers.FirstOrDefaultAsync(q=>q.Id==request.ReceiverId);
+            if (receiver == null)
+            {
+                receiver = new ChatUser
+                {
+                    Id = request.ReceiverId,
+                    Name = "Seller",
+                    Role = "seller",
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.ChatUsers.Add(receiver);
+            }
+
+            await _context.SaveChangesAsync();
+
+            var existingChat = await _context.ChatChats
+                .FirstOrDefaultAsync(c =>
+                    (c.UserId == request.SenderId && c.SellerId == request.ReceiverId) ||
+                    (c.UserId == request.ReceiverId && c.SellerId == request.SenderId));
+
+            if (existingChat != null)
+                return existingChat.Id;
+
+            var newChat = new ChatChat
+            {
+                Id = Guid.NewGuid(),
+                UserId = request.SenderId,
+                SellerId = request.ReceiverId,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.ChatChats.Add(newChat);
+            await _context.SaveChangesAsync();
+            return newChat.Id;
         }
         public async Task<List<ChatResponse>> GetChatsByUserId(Guid UserId)
         {
