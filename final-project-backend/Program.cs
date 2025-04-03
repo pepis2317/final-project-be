@@ -24,6 +24,9 @@ var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
+// Tambahkan SignalR ke dalam service
+builder.Services.AddSignalR();
+
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -82,7 +85,7 @@ builder.Services.AddScoped<IValidator<CartItemEditRequest>, EditIncompleteCartVa
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssemblies(
-        typeof(CreateMessageHandler).Assembly 
+        typeof(CreateMessageHandler).Assembly
     );
 });
 
@@ -138,5 +141,12 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseRouting();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+    endpoints.MapHub<ChatHub>("/chatHub"); 
+});
 
 app.Run();
