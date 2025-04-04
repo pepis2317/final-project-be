@@ -12,20 +12,19 @@ using final_project_backend.Validators.Shop;
 using final_project_backend.Validators.User;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;    
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Services;         
+using Services;
+using System.Reflection;
 using System.Text;
 using final_project_backend.Handlers.Message;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-// Konfigurasi JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -35,23 +34,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = "http://localhost:5252",
-            ValidAudience = "http://localhost:3000",
+            ValidIssuer = "http://localhost",
+            ValidAudience = "http://localhost",
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("linggangguliguliguligwacalingganggu"))
         };
     });
 
-// Tambahkan SignalR
+// Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddEntityFrameworkSqlServer();
 builder.Services.AddSignalR();
-
-// Konfigurasi Database
 builder.Services.AddDbContextPool<FinalProjectTrainingDbContext>(options =>
 {
     var conString = configuration.GetConnectionString("SQLServerDB");
     options.UseSqlServer(conString);
 });
-
-// Konfigurasi JSON untuk Controllers
+builder.Services.AddControllers();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -59,15 +57,15 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     });
 
-// Tambahkan Swagger
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Miscellaneous Services
+// Misc
 builder.Services.AddDataProtection();
 builder.Services.AddHttpContextAccessor();
 
-// Tambahkan Validators
+// Validators
 builder.Services.AddScoped<IValidator<LoginRequest>, LoginValidator>();
 builder.Services.AddScoped<IValidator<UserUpdateRequest>, UserUpdateValidator>();
 builder.Services.AddScoped<IValidator<CreateShopRequest>, CreateShopValidator>();
@@ -81,13 +79,15 @@ builder.Services.AddScoped<IValidator<ItemQuery>, ItemQueryValidator>();
 builder.Services.AddScoped<IValidator<CartItemRequest>, PostIncompleteCartValidator>();
 builder.Services.AddScoped<IValidator<CartItemEditRequest>, EditIncompleteCartValidator>();
 
-// Tambahkan MediatR
+// MediatR
 builder.Services.AddMediatR(cfg =>
 {
-    cfg.RegisterServicesFromAssemblies(typeof(CreateMessageHandler).Assembly);
+    cfg.RegisterServicesFromAssemblies(
+        typeof(CreateMessageHandler).Assembly
+    );
 });
 
-// Tambahkan Services
+// Services
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ItemService>();
 builder.Services.AddTransient<UserService>();
@@ -98,42 +98,48 @@ builder.Services.AddSingleton<BlobStorageService>();
 builder.Services.AddSingleton<JwtService>();
 builder.Services.AddHostedService<OrderDetailUpdaterService>();
 
-// Tambahkan Services untuk Chat System
+// Tambahan: Services untuk sistem Chat
 builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<MessageService>();
 builder.Services.AddScoped<ChatUserService>();
 
-// Konfigurasi CORS (Hanya gunakan satu konfigurasi yang benar)
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:8081") // Sesuaikan dengan frontend
-              .AllowAnyMethod()
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
-              .AllowCredentials();
+              .AllowAnyMethod();
     });
 });
 
-// **Bangun Aplikasi**
+// Kestrel
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5252); // Allows connections from any IP
+});
+
 var app = builder.Build();
 
-// **Gunakan Middleware yang Benar**
 app.UseCors("AllowAll");
+app.UseCors(policy =>
+    policy.WithOrigins("http://localhost:8081") // Sesuaikan dengan port Next.js
+          .AllowAnyMethod()
+          .AllowAnyHeader()
+);
 
-// Gunakan Swagger hanya saat development
+// Swagger UI
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Middleware lainnya
 app.UseRouting();
 app.UseAuthorization();
-app.UseAuthentication();
-app.MapControllers();
 
+app.MapControllers();
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers();
