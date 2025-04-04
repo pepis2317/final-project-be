@@ -36,8 +36,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = "http://localhost:5252",
-            ValidAudience = "http://localhost:3000",
+            ValidIssuer = "http://localhost",
+            ValidAudience = "http://localhost",
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("linggangguliguliguligwacalingganggu"))
         };
     });
@@ -109,10 +109,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:3000","http://localhost:3000", "http://localhost:8081") // Sesuaikan dengan frontend
+        policy.WithOrigins("http://localhost:3000", "http://localhost:3000", "http://localhost:8081", "http://192.168.1.3:3000", "http://192.168.18.64:3000") // Sesuaikan dengan frontend
               .AllowAnyMethod()
               .AllowAnyHeader()
-              .AllowCredentials();
+              .AllowAnyMethod().AllowCredentials(); ;
     });
 });
 
