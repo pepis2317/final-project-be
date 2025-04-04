@@ -12,11 +12,12 @@ using final_project_backend.Validators.Shop;
 using final_project_backend.Validators.User;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;    
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Services;         
+using Services;
 using System.Text;
+using final_project_backend.Hubs;
 using final_project_backend.Handlers.Message;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,8 +36,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = "http://localhost:5252",
-            ValidAudience = "http://localhost:3000",
+            ValidIssuer = "http://localhost",
+            ValidAudience = "http://localhost",
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("linggangguliguliguligwacalingganggu"))
         };
     });
@@ -108,10 +109,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:8081") // Sesuaikan dengan frontend
+        policy.WithOrigins("http://localhost:3000", "http://localhost:3000", "http://localhost:8081", "http://192.168.1.3:3000", "http://192.168.18.64:3000") // Sesuaikan dengan frontend
               .AllowAnyMethod()
               .AllowAnyHeader()
-              .AllowCredentials();
+              .AllowAnyMethod().AllowCredentials(); ;
     });
 });
 
@@ -130,14 +131,11 @@ if (app.Environment.IsDevelopment())
 
 // Middleware lainnya
 app.UseRouting();
-app.UseAuthorization();
 app.UseAuthentication();
-app.MapControllers();
+app.UseAuthorization();
 
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllers();
-    endpoints.MapHub<ChatHub>("/chatHub");
-});
+app.MapControllers();
+app.MapHub<ChatHub>("/chatHub");
+
 
 app.Run();
