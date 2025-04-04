@@ -1,10 +1,7 @@
-﻿using Entities;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using final_project_backend.Queries.Messages;
 using System;
 using System.Threading.Tasks;
-using final_project_backend.Handlers.Message;
 using final_project_backend.Commands.Message;
 using final_project_backend.Queries.Messages;
 
@@ -34,7 +31,5 @@ namespace final_project_backend.Controllers
             var result = await _mediator.Send(command);
             return Ok(result);
         }
-
-
     }
 }
