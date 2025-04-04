@@ -108,9 +108,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:3002")
+        policy.WithOrigins("http://localhost:3000", "http://localhost:3002", "http://localhost:8081") // Sesuaikan dengan frontend
+              .AllowAnyMethod()
               .AllowAnyHeader()
-              .AllowAnyMethod().AllowCredentials(); ;
+              .AllowCredentials();
     });
 });
 
