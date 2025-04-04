@@ -7,28 +7,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Services;
+using final_project_backend.Models.Chat;
 
 namespace Handlers.Chat
 {
-    public class GetUserChatsHandler : IRequestHandler<GetUserChatsQuery, List<Entities.ChatChat>>
+    public class GetUserChatsHandler : IRequestHandler<GetUserChatsQuery, List<ChatResponse>>
     {
-        private readonly FinalProjectTrainingDbContext _context;
+        private readonly ChatService _service;
 
-        public GetUserChatsHandler(FinalProjectTrainingDbContext context)
+        public GetUserChatsHandler(ChatService service)
         {
-            _context = context;
+            //kok merah
+            _service = service;
         }
 
-        public async Task<List<Entities.ChatChat>> Handle(GetUserChatsQuery request, CancellationToken cancellationToken)
+        public async Task<List<ChatResponse>> Handle(GetUserChatsQuery request, CancellationToken cancellationToken)
         {
-            var chats = await _context.ChatChats
-                .Include(c => c.User)
-                .Include(c => c.Seller)
-                .Where(c => c.UserId == request.UserId || c.SellerId == request.UserId)
-                .OrderByDescending(c => c.UpdatedAt)
-                .ToListAsync(cancellationToken);
+            var data = await _service.GetChatsByUserId(request.UserId);
 
-            return chats;
+            return data;
         }
     }
 }
