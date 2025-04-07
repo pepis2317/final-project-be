@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,6 +25,8 @@ public partial class FinalProjectTrainingDbContext : DbContext
 
     public virtual DbSet<ChatUser> ChatUsers { get; set; }
 
+    public virtual DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+
     public virtual DbSet<Item> Items { get; set; }
 
     public virtual DbSet<Order> Orders { get; set; }
@@ -35,12 +37,6 @@ public partial class FinalProjectTrainingDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-
-    //public DbSet<Chat> Chats { get; set; }
-    //public DbSet<ChatUser> ChatUser { get; set; }
-    //public DbSet<Message> Messages { get; set; }
-
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
@@ -50,13 +46,6 @@ public partial class FinalProjectTrainingDbContext : DbContext
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
-
-        modelBuilder.Entity<ChatChat>().ToTable("Chat_Chats");
-        modelBuilder.Entity<ChatUser>().ToTable("Chat_Users");
-        modelBuilder.Entity<ChatMessage>().ToTable("Chat_Messages");
-
-
         modelBuilder.Entity<Cart>(entity =>
         {
             entity.HasKey(e => e.CartId).HasName("PK__carts__2EF52A27B24DA9E9");
@@ -146,12 +135,21 @@ public partial class FinalProjectTrainingDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Chat_Use__3214EC0788B434D5");
 
-            entity.ToTable("Chat_Users");
+            entity.ToTable("Chat_Users", tb => tb.HasTrigger("trg_SetChatUserName"));
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.Role).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<DataProtectionKey>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__DataProt__3214EC07C6E1696E");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
         });
 
         modelBuilder.Entity<Item>(entity =>

@@ -19,6 +19,9 @@ using Services;
 using System.Text;
 using final_project_backend.Hubs;
 using final_project_backend.Handlers.Message;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.Repositories;
+using final_project_backend;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -65,7 +68,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Miscellaneous Services
-builder.Services.AddDataProtection();
+
+
 builder.Services.AddHttpContextAccessor();
 
 // Tambahkan Validators
@@ -81,6 +85,7 @@ builder.Services.AddScoped<IValidator<UpdateOrderRequest>, UpdateOrderValidator>
 builder.Services.AddScoped<IValidator<ItemQuery>, ItemQueryValidator>();
 builder.Services.AddScoped<IValidator<CartItemRequest>, PostIncompleteCartValidator>();
 builder.Services.AddScoped<IValidator<CartItemEditRequest>, EditIncompleteCartValidator>();
+
 
 // Tambahkan MediatR
 builder.Services.AddMediatR(cfg =>
@@ -98,11 +103,23 @@ builder.Services.AddTransient<CartService>();
 builder.Services.AddSingleton<BlobStorageService>();
 builder.Services.AddSingleton<JwtService>();
 builder.Services.AddHostedService<OrderDetailUpdaterService>();
+builder.Services.AddScoped<IXmlRepository, DatabaseXmlRepository>();
+
+builder.Services.AddDataProtection()
+    .SetApplicationName("bokapedia-be") // Ensures all instances use the same key ring
+    .AddKeyManagementOptions(options =>
+    {
+        var serviceProvider = builder.Services.BuildServiceProvider();
+        var xmlRepository = serviceProvider.GetRequiredService<IXmlRepository>();
+        options.XmlRepository = xmlRepository;
+    });
 
 // Tambahkan Services untuk Chat System
 builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<MessageService>();
 builder.Services.AddScoped<ChatUserService>();
+
+
 
 // Konfigurasi CORS (Hanya gunakan satu konfigurasi yang benar)
 builder.Services.AddCors(options =>
@@ -114,6 +131,12 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader()
               .AllowAnyMethod().AllowCredentials(); ;
     });
+});
+
+// Kestrel
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5252); // Allows connections from any IP
 });
 
 // **Bangun Aplikasi**
